@@ -233,6 +233,7 @@ tbody tr:last-child td{border-bottom:none}
 .tag-dev{background:var(--st-dev-bg);color:var(--st-dev-txt)}
 .tag-wait{background:var(--st-done2-bg);color:var(--st-done2-txt)}
 .tag-done{background:var(--st-close-bg);color:var(--st-close-txt)}
+.tag-resolved{background:var(--st-close-bg);color:var(--st-close-txt)}
 
 /* 进度列 */
 .prog{display:flex;flex-direction:column;gap:5px}
@@ -308,18 +309,7 @@ tbody tr:last-child td{border-bottom:none}
   .m-end-tip .em{font-size:15px}
 }
 
-/* 二次确认弹窗 */
-.confirm{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(58,56,53,.32)}
-.confirm.open{display:flex}
-.confirm-box{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:26px 28px;max-width:340px;width:88vw;box-shadow:0 12px 40px rgba(58,56,53,.16);text-align:center}
-.confirm-box .ico{font-size:30px;margin-bottom:10px}
-.confirm-box .msg{font-size:15px;color:var(--txt);font-weight:600;line-height:1.5;margin-bottom:22px}
-.confirm-box .btns{display:flex;gap:12px;justify-content:center}
-.confirm-box button{flex:1;padding:11px 0;border-radius:8px;font-size:13.5px;cursor:pointer;border:1px solid transparent;font-weight:600;transition:all .15s}
-.confirm-yes{background:#E2EFDE;color:#2F472A;border-color:#C9DCC2}
-.confirm-yes:hover{filter:brightness(.96)}
-.confirm-no{background:#fff;color:var(--sub);border-color:var(--btn-border)}
-.confirm-no:hover{border-color:#C9BBA8;color:var(--txt)}
+/* (二次确认弹窗已移除：点击任务号直接跳转 Jira) */
 
 /* Toast */
 .toast{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%) translateY(12px);background:#3A3835;color:#fff;padding:14px 26px;border-radius:12px;font-size:14px;z-index:70;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:80vw;text-align:center;box-shadow:0 10px 30px rgba(58,56,53,.25)}
@@ -336,7 +326,7 @@ tbody tr:last-child td{border-bottom:none}
 .m-card .name{color:#A8A29C;font-size:12.5px;line-height:1.45;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .m-card .prog-wrap{margin-bottom:10px}
 .m-card .meta{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--sub);margin-top:8px}
-.m-card .meta span{background:none;border:none;border-radius:0;padding:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:flex;justify-content:space-between;gap:10px}
+.m-card .meta span{background:none;border:none;border-radius:0;padding:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:flex;justify-content:flex-start;gap:6px}
 .m-card .meta .lb{flex-shrink:0;color:var(--sub);opacity:.75;margin:0}
 
 /* 移动端适配 */
@@ -372,7 +362,7 @@ tbody tr:last-child td{border-bottom:none}
   .m-card .key{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
   .m-card .name{word-break:break-word}
   .m-card .meta{gap:6px}
-  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere;justify-content:space-between;gap:10px}
+  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere;justify-content:flex-start;gap:6px}
   .pager{justify-content:space-between}
   .foot{font-size:11px;margin-top:14px}
 }
@@ -471,16 +461,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<div class="confirm" id="confirm">
-  <div class="confirm-box">
-    <div class="ico">🔐</div>
-    <div class="msg">你是海鼎员工？</div>
-    <div class="btns">
-      <button class="confirm-no" id="confirm-no">否</button>
-      <button class="confirm-yes" id="confirm-yes">是</button>
-    </div>
-  </div>
-</div>
+<!-- 二次确认弹窗已移除：点击任务号直接跳转 Jira -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -559,13 +540,14 @@ function renderWinInfo(){
 renderWinInfo();
 updateCards();
 
-function badgeClass(s){return s==='开发中'?'tag-dev':(s==='开发完成'?'tag-wait':(s==='关闭'?'tag-done':(s==='开始'?'tag-start':'tag-run')));}
+function badgeClass(s){return s==='开发中'?'tag-dev':(s==='开发完成'?'tag-wait':(s==='关闭'?'tag-done':(s==='已解决'?'tag-resolved':(s==='开始'?'tag-start':'tag-run'))));}
 const STATUS_TAG={
   '测试中':'<span class="tag tag-run">测试中</span>',
   '开发中':'<span class="tag tag-dev">开发中</span>',
   '开始':'<span class="tag tag-start">开始</span>',
   '开发完成':'<span class="tag tag-wait">开发完成</span>',
   '关闭':'<span class="tag tag-done">关闭</span>',
+  '已解决':'<span class="tag tag-resolved">已解决</span>',
 };
 function progClass(s){
   if(s==='测试中') return ['p-test','pf-test'];
@@ -611,7 +593,7 @@ function renderTbody(rows, pageRows, isLastPage){
       '</div>';
     return '<tr data-key="'+esc(t.key)+'">'+
       '<td class="task-cell">'+
-        '<a class="task-key" onclick="confirmJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
+        '<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
         '<div class="task-name" title="'+esc(t.summary)+'">'+esc(t.summary)+'</div>'+
       '</td>'+
       '<td>'+(STATUS_TAG[t.status]||esc(t.status))+'</td>'+
@@ -638,8 +620,7 @@ function renderMobile(rows, pageRows, isLastPage){
     const [pb,pf]=progClass(t.status);
     return '<div class="m-card" data-key="'+esc(t.key)+'">'+
       '<div class="top">'+
-        '<a class="key" onclick="confirmJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
-        (STATUS_TAG[t.status]||esc(t.status))+
+        '<a class="key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
       '</div>'+
       '<div class="name">'+esc(t.summary)+'</div>'+
       '<div class="prog-wrap">'+
@@ -649,6 +630,7 @@ function renderMobile(rows, pageRows, isLastPage){
         '</div>'+
       '</div>'+
       '<div class="meta">'+
+        '<span><span class="lb">Jira 状态</span>'+(STATUS_TAG[t.status]||esc(t.status))+'</span>'+
         '<span><span class="lb">工作量</span>'+t.workload+'</span>'+
         '<span><span class="lb">开始</span>'+esc(t.kickoff)+'</span>'+
         '<span><span class="lb">产品</span>'+esc(t.product||'—')+'</span>'+
@@ -688,16 +670,11 @@ function render(){
   renderMobile(rows, pageRows, isLastPage);
 }
 
-/* 二次确认弹窗 + Toast（点击任务号） */
-let pendingKey=null;
-const confirmEl=document.getElementById('confirm');
-function confirmJira(key){
-  pendingKey=key;
-  confirmEl.classList.add('open');
+/* 点击任务号 → 直接在新标签打开 Jira */
+function openJira(key){
+  openJiraInNewTab(key);
 }
-// 暴露到 window：内联 onclick="confirmJira(...)" 运行在全局作用域，
-// 而本函数定义在 try 块内（块级作用域），不暴露会导致点击报「confirmJira is not defined」
-window.confirmJira = confirmJira;
+window.openJira = openJira;
 function openJiraInNewTab(key){
   // 在移动端/微信内置浏览器中，window.open 常被拦截；用临时 <a target="_blank"> 点击更可靠
   const a=document.createElement('a');
@@ -711,17 +688,6 @@ function openJiraInNewTab(key){
   a.click();
   setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},100);
 }
-document.getElementById('confirm-yes').addEventListener('click',()=>{
-  confirmEl.classList.remove('open');
-  if(pendingKey)openJiraInNewTab(pendingKey);
-  pendingKey=null;
-});
-document.getElementById('confirm-no').addEventListener('click',()=>{
-  confirmEl.classList.remove('open');
-  showToast('很抱歉，你没有权限查看任务详情');
-  pendingKey=null;
-});
-confirmEl.addEventListener('click',e=>{if(e.target===confirmEl){confirmEl.classList.remove('open');pendingKey=null;}});
 let toastTimer=null;
 function showToast(msg){
   const el=document.getElementById('toast');
@@ -770,7 +736,7 @@ const drawer=document.getElementById('drawer');
 function openDrawer(t){
   const [pb,pf]=progClass(t.status);
   const rows=[
-    ['任务号','<a class="task-key" onclick="confirmJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'],
+    ['任务号','<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'],
     ['任务名称',esc(t.summary)],
     ['Jira 状态',(STATUS_TAG[t.status]||esc(t.status))],
     ['进度','<div class="prog" style="margin-top:2px"><span class="prog-pct">'+t.progress+'%</span><div class="prog-bar '+pb+'"><div class="prog-fill '+pf+'" style="width:'+t.progress+'%"></div></div></div>'],
