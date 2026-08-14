@@ -24,11 +24,33 @@ python gen_dashboard_v2.py
 
 ## 如何拉取最新排期数据
 
-看板数据是**静态快照**。如需刷新到最新排期：
+看板数据默认是**静态快照**（`gantt_0814_0821.json`）。如需刷新到最新排期，推荐用自动化脚本：
 
-1. 用已登录 Selene 的浏览器，从 LocalStorage 提取 `vuex` 中的 `token`
-   （Selene 地址：`http://selene.hd123.cn:52163/selene-web/`）。
-2. 调用接口：
+### 方式一：自动脚本（推荐，支持每小时刷新）
+
+`fetch_selene.py` 会从 Selene API 拉取「今天 ~ 今天+7 天」数据，保存为 `gantt_live.json` 并自动重新生成看板。
+
+```bash
+# token 来源：登录 Selene 网页 → DevTools → Application → Local Storage →
+#   http://selene.hd123.cn:52163 → 复制 vuex 里的 token 字段
+set SELENE_TOKEN=你的token        # 方式 A：环境变量
+# 或把 token 写入同目录 selene_token.txt   # 方式 B：文件（勿提交到公开仓库）
+python fetch_selene.py
+```
+
+看板底部「当前查看窗口」处会显示**最近获取**时间（来自数据里的 `fetchTime`）。
+
+**每小时自动刷新（Windows 任务计划）**：
+
+```bat
+schtasks /create /sc hourly /tn "SeleneDashboardSync" /tr "python C:\...\selene-schedule-dashboard\fetch_selene.py"
+```
+
+> 注意：Selene token 会过期，过期后脚本会报错退出，需重新从浏览器取一次 token。
+
+### 方式二：手动 curl（留档）
+
+用已登录 Selene 的浏览器，从 LocalStorage 提取 `vuex` 中的 `token`，调用接口：
 
 ```bash
 curl -X POST "http://selene.hd123.cn:52163/selene/v1/plan/gantt/employee/query" \

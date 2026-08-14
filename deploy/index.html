@@ -1,86 +1,4 @@
-# -*- coding: utf-8 -*-
-"""生成刘莹人力排期看板 HTML — 暖米极简工程师风
-
-变更记录：
-- 静态快照也显示 HTML 生成时间
-- 列宽：产品列收窄，客户项目列加宽
-- 移动端重写：标题不竖排、状态标签不竖排、表格改为卡片列表、取消纵向滚动、消除滚动晃动
-- 任务明细底部去重线
-- 最后一条数据后增加俏皮提示语
-- 增强缺省/错误提示
-"""
-import json, os, datetime
-from collections import Counter
-
-TEMP = os.environ.get('TEMP', '')
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, '刘莹_人力排期看板.html')
-
-# 数据源：优先读取实时拉取的快照，回退到同目录/系统 TEMP 的静态快照
-_src_candidates = [
-    os.path.join(HERE, 'gantt_live.json'),
-    os.path.join(HERE, 'gantt_0814_0821.json'),
-    os.path.join(TEMP, 'gantt_0814_0821.json'),
-]
-_src = next((p for p in _src_candidates if os.path.exists(p)), _src_candidates[-1])
-d = json.load(open(_src, encoding='utf-8'))
-data = d['data']
-emp = data['employees'][0]
-tasks_raw = emp['tasks']
-
-def to_iso(s):
-    if not s:
-        return None
-    return s[:10]
-
-# 过滤 MASK01 + TM + 简化
-simplified = []
-for t in tasks_raw:
-    key = t.get('key', '')
-    if key.startswith('MASK01') or key.startswith('TM-'):
-        continue
-    k = to_iso(t.get('ganttKickoffDate') or t.get('kickoffDate'))
-    e = to_iso(t.get('ganttDueDate') or t.get('dueDate'))
-    simplified.append({
-        'key': key,
-        'summary': t.get('summary', ''),
-        'status': t.get('status', ''),
-        'progress': round((t.get('progress') or 0) * 100),
-        'workload': t.get('workload') or 0,
-        'kickoff': k or '',
-        'due': e or '',
-        'done': bool(t.get('done', False)),
-        'product': t.get('product', ''),
-        'proj': t.get('customerProject', ''),
-        'starter': t.get('starterName', ''),
-    })
-
-# 按时间先后排序（kickoff 升序，due 升序）
-simplified.sort(key=lambda x: (x['kickoff'] or '9999', x['due'] or '9999', x['key']))
-
-print("过滤后状态分布:", dict(Counter(t['status'] for t in simplified)))
-print("数据源:", _src)
-
-# 静态快照也显示生成时间（不附加括号提示）
-last_fetch = d.get('fetchTime')
-if not last_fetch:
-    last_fetch = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-
-payload = {
-    'empName': emp.get('employeeName', ''),
-    'empId': emp.get('employee', ''),
-    'dept': emp.get('department', ''),
-    'sprint': '0814~0821',
-    'sprintBegin': data.get('beginDate', '')[:10],
-    'sprintEnd': data.get('endDate', '')[:10],
-  'lastFetch': last_fetch,
-  'tokenExp': d.get('tokenExp', ''),
-  'tokenExpired': d.get('tokenExpired', False),
-  'tasks': simplified,
-}
-data_json = json.dumps(payload, ensure_ascii=False)
-
-HTML = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -420,7 +338,7 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 try {
-const D = __DATA__;
+const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "sprint": "0814~0821", "sprintBegin": "2026-08-15", "sprintEnd": "2026-08-22", "lastFetch": "2026-08-15 00:24", "tokenExp": "2026-08-16 00:18", "tokenExpired": false, "tasks": [{"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-15", "due": "2026-08-17", "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪"}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "status": "开始", "progress": 0, "workload": 0, "kickoff": "2026-08-15", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校"}, {"key": "SAS-13744", "summary": "绿叶-到家小程序配送单截停失败后 order.intercept 未回滚优化", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-17", "due": "2026-08-17", "done": false, "product": "sas-销售中台", "proj": "湖南绿叶水果连锁_POS_年度服务项目(202511-202611)", "starter": "杨海校"}, {"key": "SAS-13822", "summary": "【金粒门】到家小程序给到CRM的订单号信息更正为到家订单交易号", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sy-dj-海鼎到家", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "苗圃"}, {"key": "SAS-13849", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter-套餐", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13728", "summary": "零食很能嗨-自助销售单的特征码同步H6及pos", "status": "开发完成", "progress": 0, "workload": 2.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零小嗨新增自助收银(202606-202706)", "starter": "杨海校"}, {"key": "SAS-13752", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13754", "summary": "泡泡玛特国际_CPOS对接客服系统增加推送secure_id", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "北京泡泡玛特潮流玩具专卖_POS_泡泡玛特北美1开发合同(202510-202610)", "starter": "杨海校"}, {"key": "SAS-13417", "summary": "千家惠-自助收银机支持核销文峰集团会员系统发售的卡券", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13418", "summary": "新宇贸易_自助收银对接微盟POS通", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13552", "summary": "【桂林力源】巡检支持点检项配置", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "张家浩"}, {"key": "SAS-13730", "summary": "厦门元初. 自助收银机对接元初自研支付中台需求（优化需求）", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sas-销售中台", "proj": "福建厦门元初食品_POS_元初人日锁定合同(202604-202704)", "starter": "杨海校"}]};
 
 const TAGLINES=[
   "☕ 排期已就绪，今天也要元气满满～",
@@ -721,10 +639,3 @@ render();
 </script>
 </body>
 </html>
-"""
-
-html = HTML.replace('__DATA__', data_json)
-with open(OUT, 'w', encoding='utf-8') as f:
-    f.write(html)
-print("written:", OUT, os.path.getsize(OUT), "bytes")
-print("tasks (no MASK01, no TM):", len(simplified))

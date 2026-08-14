@@ -1,0 +1,9 @@
+# 不提交 Selene token（含敏感凭证）
+selene_token.txt
+
+# 实时拉取的快照为临时数据，重新 fetch 即可生成
+gantt_live.json
+
+# Python 缓存
+__pycache__/
+*.pyc
