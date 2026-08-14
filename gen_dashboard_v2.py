@@ -164,7 +164,7 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .card.active{border:2px solid #C9BBA8}
 .card .num{font-size:34px;font-weight:800;line-height:1.1}
 .card .lbl{font-size:12px;margin-top:8px;font-weight:600;line-height:1.35}
-.card .ctip{font-size:11px;margin-top:7px;font-weight:500;line-height:1.4;opacity:.92;display:flex;align-items:center;gap:4px}
+.card .ctip{font-size:12.5px;margin-top:8px;font-weight:500;line-height:1.45;opacity:.92;display:flex;align-items:center;gap:4px}
 .card-total{background:var(--c-total-bg)} .card-total .num,.card-total .lbl{color:var(--c-total-txt)}
 .card-done{background:var(--c-done-bg)} .card-done .num,.card-done .lbl{color:var(--c-done-txt)}
 .card-run{background:var(--c-run-bg)} .card-run .num,.card-run .lbl{color:var(--c-run-txt)}
@@ -329,9 +329,9 @@ tbody tr:last-child td{border-bottom:none}
 .m-card .key:hover{border-bottom-color:var(--wait-txt)}
 .m-card .name{color:#A8A29C;font-size:12.5px;line-height:1.45;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .m-card .prog-wrap{margin-bottom:10px}
-.m-card .meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11.5px;color:var(--sub)}
-.m-card .meta span{background:var(--filter-bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;white-space:nowrap}
-.m-card .meta .lb{color:var(--sub);margin-right:2px}
+.m-card .meta{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--sub);margin-top:8px}
+.m-card .meta span{background:none;border:none;border-radius:0;padding:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:flex;gap:6px}
+.m-card .meta .lb{flex-shrink:0;color:var(--sub);opacity:.75;margin:0}
 
 /* 移动端适配 */
 @media(max-width:640px){
@@ -348,14 +348,15 @@ tbody tr:last-child td{border-bottom:none}
   .card-prod .lbl{font-size:10.5px}
   .card .num{font-size:28px}
   .card .lbl{font-size:11px}
+  .card .ctip{font-size:11px}
   .panel{padding:18px 14px;min-width:0}
   .window-info{font-size:12px;padding:10px 12px}
   .window-info .win-fetch{margin-left:0;width:100%;text-align:right}
   .filters{flex-direction:column;align-items:stretch;gap:12px;padding:12px}
   .filters input{width:100%}
   .chk-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
-  .chk{padding:8px 5px;justify-content:center;text-align:center;font-size:12px;min-height:40px}
-  .chk span{white-space:normal;line-height:1.25}
+  .chk{padding:8px 10px;justify-content:center;text-align:center;font-size:12px;flex-direction:row;gap:6px;min-height:36px}
+  .chk span{white-space:nowrap;line-height:1.25;writing-mode:horizontal-tb}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
@@ -416,8 +417,8 @@ tbody tr:last-child td{border-bottom:none}
   <div class="panel">
     <h2>任务明细</h2>
     <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
-    <div class="window-info" id="win-info"></div>
     <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
+    <div class="window-info" id="win-info"></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
       <div class="chk-group" id="fstatus">
@@ -537,7 +538,7 @@ document.getElementById('sprint').textContent=D.sprint;
 document.getElementById('gen-time').textContent='生成于 '+D.sprintBegin+' ~ '+D.sprintEnd;
 
 function renderWinInfo(){
-  const fetchHtml='最近获取：<b>'+esc(D.lastFetch)+'</b>';
+  const fetchHtml='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
   document.getElementById('win-info').innerHTML=
     '<span class="win-main">当前查看窗口：<b>'+fmt(TODAY)+' ~ '+fmt(WIN_END)+'</b>（今天起未来 7 天）'+
     (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+'</span>'+
