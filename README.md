@@ -1,15 +1,37 @@
 # 刘莹 · 人力排期看板（Selene → 可视化）
 
-把 Selene 人力排期系统的员工排期数据，生成为**自包含、可分享**的 HTML 看板。
+把 **Selene 人力排期系统**的员工排期数据，自动生成为一份**自包含、可分享**的 HTML 看板，方便测试 / 研发 / 产品随时查看某位同事在未来一段时间内的任务排期、状态分布与工作量。
+
+> 数据源：Selene 人力排期系统（`http://selene.hd123.cn:52163/selene-web/`）
+> 看板风格：暖米极简配色，移动端 / PC 端自适应，无需后端、无数据库。
+
+---
+
+## 这个看板能做什么
+
+- **一屏看全排期**：顶部 4 张统计卡（任务总数 / 已完成 / 进行中 / 未开始）+ 任务明细表格。
+- **动态时间窗口**：打开看板时按「今天前 2 天 ~ 今天后 4 天」自动筛选，无需手动改日期。
+- **状态一目了然**：任务按 Jira 状态着色（测试中 / 开发完成 / 开始 / 开发中 / 关闭 / 已解决）。
+- **直达 Jira**：点击任意任务号，直接跳转公司 Jira 对应任务单。
+- **产品耗时冠军**：在「产品」列表头下方标出当前窗口内耗时最多的产品。
+- **工作量预警**：当前窗口工作量超过 40h 时，给出「已超负荷运作」提示。
+- **移动端友好**：手机上卡片式展示、筛选标签、横幅均做了适配。
+
+---
 
 ## 文件说明
 
 | 文件 | 作用 |
 |------|------|
 | `gen_dashboard_v2.py` | 生成脚本：读取排期数据 JSON，输出看板 HTML |
-| `gantt_0814_0821.json` | 排期数据快照（2026-08-14 拉取，已脱敏，无 token） |
-| `刘莹_人力排期看板.html` | **最终版**看板（抹茶绿配色、4 个统计卡、精简列） |
-| `刘莹_人力排期看板_20260814.html` | 旧完整版（含甘特图/项目分布/状态分布，留档） |
+| `fetch_selene.py` | 拉取脚本：调用 Selene API 拉取最新排期，写入 `gantt_live.json` 并重新生成看板 |
+| `gantt_live.json` | 排期数据快照（由 `fetch_selene.py` 生成，含脱敏后的任务数据） |
+| `刘莹_人力排期看板.html` | **最终看板**：直接用浏览器打开即可查看 |
+| `deploy/index.html` | 对外分享用的部署副本（同最终看板） |
+| `selene_token.txt` | Selene token（**已被 .gitignore 排除，不会提交**） |
+| `setup_autosync.bat` | Windows 任务计划一键注册：每小时自动拉取 + 生成 |
+
+---
 
 ## 如何运行（重新生成看板）
 
@@ -19,16 +41,14 @@
 python gen_dashboard_v2.py
 ```
 
-脚本会读取同目录的 `gantt_0814_0821.json`，在同目录生成 `刘莹_人力排期看板.html`。
+脚本读取同目录的 `gantt_live.json`，生成 `刘莹_人力排期看板.html`。
 直接用浏览器打开该 HTML 即可查看，无需联网、无需登录。
+
+---
 
 ## 如何拉取最新排期数据
 
-看板数据默认是**静态快照**（`gantt_0814_0821.json`）。如需刷新到最新排期，推荐用自动化脚本：
-
-### 方式一：自动脚本（推荐，支持每小时刷新）
-
-`fetch_selene.py` 会从 Selene API 拉取「今天 ~ 今天+7 天」数据，保存为 `gantt_live.json` 并自动重新生成看板。
+看板数据默认是**静态快照**（`gantt_live.json`）。如需刷新到最新排期，用自动化脚本：
 
 ```bash
 # token 来源：登录 Selene 网页 → DevTools → Application → Local Storage →
@@ -38,13 +58,9 @@ set SELENE_TOKEN=你的token        # 方式 A：环境变量
 python fetch_selene.py
 ```
 
-看板底部「当前查看窗口」处会显示**最近获取**时间（来自数据里的 `fetchTime`）。
+`fetch_selene.py` 会从 Selene API 拉取「今天前 2 天 ~ 今天后 4 天」数据，保存为 `gantt_live.json` 并自动重新生成看板。
 
-**每小时自动刷新（Windows 任务计划）**：
-
-```bat
-schtasks /create /sc hourly /tn "SeleneDashboardSync" /tr "python C:\...\selene-schedule-dashboard\fetch_selene.py"
-```
+**每小时自动刷新（Windows 任务计划）**：双击运行 `setup_autosync.bat`，会用任务计划创建名为 `SeleneDashboardSync` 的每小时任务，自动执行 `fetch_selene.py`（拉取 + 生成 + 同步到 `deploy/`）。日志见 `selene_sync.log`。
 
 > 注意：Selene token 会过期，过期后脚本会报错退出，需重新从浏览器取一次 token。
 
@@ -57,14 +73,13 @@ curl -X POST "http://selene.hd123.cn:52163/selene/v1/plan/gantt/employee/query" 
   -H "Authorization: <token>" \
   -H "x-requested-with: XMLHttpRequest" \
   -H "Content-Type: application/json" \
-  -d '{"beginDate":"2026-08-14","endDate":"2026-08-21","departments":["测试二部"],"employees":["liuying"],"queryRef":false}' \
-  -o gantt_0814_0821.json
+  -d '{"beginDate":"2026-08-13","endDate":"2026-08-19","departments":["测试二部"],"employees":["liuying"],"queryRef":false}' \
+  -o gantt_live.json
 ```
 
-> 注意：`Authorization` 头**不带** `Bearer` 前缀；`beginDate/endDate` 为查询窗口。
-> 替换上面的日期即可拉取不同窗口的排期。
+> 注意：`Authorization` 头**不带** `Bearer` 前缀；`beginDate/endDate` 为查询窗口（前 2 天 → 后 4 天）。
 
-3. 重新运行 `python gen_dashboard_v2.py` 生成看板。
+---
 
 ## Token 更新 SOP（重要）
 
@@ -76,36 +91,33 @@ Selene 的 token 是 **JWT，有效期约 24 小时**，过期后接口返回 40
 4. 把新 token 写入 `selene_token.txt`（同目录，已被 .gitignore 排除，不会提交）。
    - 或直接设置环境变量：`set SELENE_TOKEN=新token`。
 5. 运行 `python fetch_selene.py` 重新拉取并生成。
-6. 若要看板对外分享链接也更新，请让 AI 助手重新 deploy（或自行发布 `deploy/index.html`）。
+6. 若要看板对外分享链接也更新，请重新 deploy `deploy/index.html`。
 
-> 当 token 过期时，`fetch_selene.py` 会**自动沿用上一次成功的快照**并重新生成看板，
-> 看板顶部会显示「⚠️ 数据 token 已过期，请到浏览器重新复制 token 后刷新」，
-> 这样你和同事一打开链接就能看到提示，不会看到报错。
+---
 
-## 自动化刷新方案
+## 部署与分享
 
-**本地每小时自动刷新（推荐）：** 双击运行 `setup_autosync.bat`，
-会用 Windows 任务计划创建名为 `SeleneDashboardSync` 的每小时任务，
-自动执行 `fetch_selene.py`（拉取 + 生成 + 同步到 `deploy/`）。日志见 `selene_sync.log`。
+- 本地：`浏览器直接打开 刘莹_人力排期看板.html`。
+- 对外分享：将 `deploy/index.html` 部署到静态托管（如 CloudStudio），得到一条可分享链接，任何人无需登录即可查看。
 
-**公开链接更新：** 由于对外分享链接需要一次部署动作，建议节奏如下——
-- 每天上班时，若看板提示 token 已过期：复制新 token → 运行 fetch → 让 AI 重新 deploy。
-- 否则每小时任务已保证本地数据最新，公开链接每天 deploy 一次即可。
-
-**全流程自动化卡点：** 因 Selene token 需要浏览器登录态才能获取（自动登录受服务端 DTO 限制无法脚本化），
-目前无法做到「无人值守永久自动刷新」，必须每天人工复制一次 token。这是唯一需手动的环节。
+---
 
 ## 看板设计要点（已确认的需求）
 
-- 打开时按「当天 ~ 当天+7天」动态筛选显示（数据窗口随打开日期后移）。
-- 统计卡 4 个：**任务总数 / 已完成(关闭) / 进行中(测试中) / 未开始(开发完成+开发中+开始)**，数字固定为窗口内全量，不随筛选变化。
-- 过滤 `MASK01`、`TM-` 开头的项目单。
-- 默认勾选「测试中 + 开发完成」。
-- 任务号点击跳转 Jira：`http://jira6.app.hd123.cn/jira/browse/{任务号}`（新标签页打开）。
-- 摘要 / 客户项目超一行省略，悬停显示完整；开始 / 产品列完整展示；无「截止」列。
+- **数据窗口**：打开时按「今天前 2 天 ~ 今天后 4 天」动态筛选（数据窗口随打开日期后移）。
+- **统计卡 4 个**：任务总数 / 已完成(关闭) / 进行中(测试中) / 未开始(开发完成+开发中+开始)，数字固定为窗口内全量，不随筛选变化。
+- **过滤规则**：自动过滤 `MASK01`、`TM-` 开头的任务单（内部占位 / 模板单）。
+- **默认勾选**：「测试中 + 开发完成」。
+- **Jira 跳转**：任务号点击跳转 `http://jira6.app.hd123.cn/jira/browse/{任务号}`（PC 端新标签页，移动端同标签页打开，规避微信拦截）。
+- **任务名称**：单行展示，超出省略，鼠标悬停显示完整。
+- **开发人**：取「前置任务员工」姓名（`prev.employeeName`），更符合排期责任归属。
+- **产品耗时冠军**：在「产品」列列表头下方标注当前窗口耗时最多的产品。
+- **工作量预警**：窗口内总工作量 > 40h 时提示「已超负荷运作」。
 
-## 数据窗口说明
+## 自动化刷新方案
 
-`gantt_0814_0821.json` 抓取于 2026-08-14，覆盖 08-14~08-21。
-看板里「7 天窗口」只是按打开当天**重新筛选这份快照**，并不会自动联网拉新数据。
-若需长期有效，需按上面步骤定期重新拉取数据并重生成（可做成定时任务）。
+**本地每小时自动刷新（推荐）**：双击运行 `setup_autosync.bat`，会用 Windows 任务计划创建名为 `SeleneDashboardSync` 的每小时任务，自动执行 `fetch_selene.py`（拉取 + 生成 + 同步到 `deploy/`）。
+
+**公开链接更新**：对外分享链接需一次部署动作，建议节奏——每天上班时若看板提示 token 已过期：复制新 token → 运行 fetch → 重新 deploy；否则每小时任务已保证本地数据最新。
+
+> **全流程自动化卡点**：Selene token 需要浏览器登录态才能获取（自动登录受服务端 DTO 限制无法脚本化），目前无法做到「无人值守永久自动刷新」，必须每天人工复制一次 token。这是唯一需手动的环节。
