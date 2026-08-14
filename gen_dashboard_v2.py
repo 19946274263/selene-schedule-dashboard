@@ -157,6 +157,10 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .head .tagline{font-size:12px;color:var(--sub);margin-top:5px;opacity:.88;display:flex;align-items:center;gap:5px}
 .head .tagline::before{content:"";width:14px;height:1px;background:var(--c-wait-txt);opacity:.5}
 
+/* 移动端精简：隐藏头像与产品耗时卡 */
+.mobile .head .avatar{display:none}
+.mobile .card-prod{display:none}
+
 /* 顶部指标卡片 */
 .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin:20px 0}
 .card{border-radius:8px;padding:20px 22px;text-align:center;border:1px solid var(--line);cursor:pointer;transition:filter .15s,border-color .15s;user-select:none}
@@ -177,8 +181,10 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .prod-legend i{display:inline-block;width:6px;height:6px;border-radius:2px;margin-right:2px}
 
 .panel{background:#fff;border-radius:8px;padding:24px 28px;border:1px solid var(--line)}
-.panel h2{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--txt)}
+.panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.panel h2{font-size:17px;font-weight:700;margin-bottom:0;display:flex;align-items:center;gap:8px;color:var(--txt)}
 .panel h2::before{content:"";width:5px;height:18px;background:var(--c-wait-txt);border-radius:3px}
+.panel-head .tip-soft{margin-bottom:0;padding:0;opacity:.85}
 .window-info{font-size:13px;color:var(--sub);margin-bottom:18px;background:var(--filter-bg);border-radius:8px;padding:12px 16px;border:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .window-info .win-main{flex:1;min-width:0}
 .window-info .win-fetch{margin-left:auto;white-space:nowrap}
@@ -316,8 +322,8 @@ tbody tr:last-child td{border-bottom:none}
 .confirm-no:hover{border-color:#C9BBA8;color:var(--txt)}
 
 /* Toast */
-.toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:#3A3835;color:#fff;padding:12px 22px;border-radius:10px;font-size:13px;z-index:70;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:80vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%) translateY(12px);background:#3A3835;color:#fff;padding:14px 26px;border-radius:12px;font-size:14px;z-index:70;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:80vw;text-align:center;box-shadow:0 10px 30px rgba(58,56,53,.25)}
+.toast.show{opacity:1;transform:translate(-50%,-50%) translateY(0)}
 
 /* 移动端卡片列表 */
 .mobile-list{display:none}
@@ -329,8 +335,8 @@ tbody tr:last-child td{border-bottom:none}
 .m-card .key:hover{border-bottom-color:var(--wait-txt)}
 .m-card .name{color:#A8A29C;font-size:12.5px;line-height:1.45;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .m-card .prog-wrap{margin-bottom:10px}
-.m-card .meta{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--sub);margin-top:8px}
-.m-card .meta span{background:none;border:none;border-radius:0;padding:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:flex;gap:6px}
+.m-card .meta{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--sub);margin-top:8px}
+.m-card .meta span{background:none;border:none;border-radius:0;padding:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;display:flex;justify-content:space-between;gap:10px}
 .m-card .meta .lb{flex-shrink:0;color:var(--sub);opacity:.75;margin:0}
 
 /* 移动端适配 */
@@ -354,9 +360,9 @@ tbody tr:last-child td{border-bottom:none}
   .window-info .win-fetch{margin-left:0;width:100%;text-align:right}
   .filters{flex-direction:column;align-items:stretch;gap:12px;padding:12px}
   .filters input{width:100%}
-  .chk-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
-  .chk{padding:8px 10px;justify-content:center;text-align:center;font-size:12px;flex-direction:row;gap:6px;min-height:36px}
-  .chk span{white-space:nowrap;line-height:1.25;writing-mode:horizontal-tb}
+  .chk-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  .chk{padding:8px 10px;justify-content:flex-start;text-align:left;font-size:11.5px;flex-direction:row;gap:6px;min-height:38px;width:100%;min-width:0;overflow:hidden}
+  .chk span{white-space:nowrap;line-height:1.25;writing-mode:horizontal-tb;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
@@ -365,8 +371,8 @@ tbody tr:last-child td{border-bottom:none}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
   .m-card .key{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
   .m-card .name{word-break:break-word}
-  .m-card .meta{gap:8px 10px}
-  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+  .m-card .meta{gap:6px}
+  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere;justify-content:space-between;gap:10px}
   .pager{justify-content:space-between}
   .foot{font-size:11px;margin-top:14px}
 }
@@ -415,8 +421,10 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 
   <div class="panel">
-    <h2>任务明细</h2>
-    <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
+    <div class="panel-head">
+      <h2>任务明细</h2>
+      <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
+    </div>
     <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="window-info" id="win-info"></div>
     <div class="filters">
@@ -478,6 +486,10 @@ tbody tr:last-child td{border-bottom:none}
 <script>
 try {
 const D = __DATA__;
+
+// 移动端检测：用于精简头部头像与产品耗时卡
+const IS_MOBILE = window.matchMedia('(max-width:640px)').matches || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
+if(IS_MOBILE) document.body.classList.add('mobile');
 
 const TAGLINES=[
   "☕ 排期已就绪，今天也要元气满满～",
@@ -686,9 +698,22 @@ function confirmJira(key){
 // 暴露到 window：内联 onclick="confirmJira(...)" 运行在全局作用域，
 // 而本函数定义在 try 块内（块级作用域），不暴露会导致点击报「confirmJira is not defined」
 window.confirmJira = confirmJira;
+function openJiraInNewTab(key){
+  // 在移动端/微信内置浏览器中，window.open 常被拦截；用临时 <a target="_blank"> 点击更可靠
+  const a=document.createElement('a');
+  a.href=jiraUrl(key);
+  a.target='_blank';
+  a.rel='noopener noreferrer';
+  a.style.position='fixed';
+  a.style.opacity='0';
+  a.style.pointerEvents='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},100);
+}
 document.getElementById('confirm-yes').addEventListener('click',()=>{
   confirmEl.classList.remove('open');
-  if(pendingKey)window.open(jiraUrl(pendingKey),'_blank');
+  if(pendingKey)openJiraInNewTab(pendingKey);
   pendingKey=null;
 });
 document.getElementById('confirm-no').addEventListener('click',()=>{
