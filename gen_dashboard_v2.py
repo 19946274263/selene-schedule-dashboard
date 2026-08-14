@@ -58,8 +58,20 @@ for t in tasks_raw:
 # 按时间先后排序（kickoff 升序，due 升序）
 simplified.sort(key=lambda x: (x['kickoff'] or '9999', x['due'] or '9999', x['key']))
 
+# 工作量与产品分布统计
+total_workload = round(sum(t['workload'] for t in simplified), 1)
+overload = total_workload > 40
+prod_wl = {}
+for t in simplified:
+    pr = t['product'].strip() or '未分类'
+    prod_wl[pr] = prod_wl.get(pr, 0.0) + t['workload']
+prod_dist = sorted([{'product': p, 'hours': round(h, 1), 'short': (p.split('-')[0] if '-' in p else p[:4])} for p, h in prod_wl.items()], key=lambda x: -x['hours'])
+for item in prod_dist:
+    item['pct'] = round(item['hours'] / total_workload * 100, 1) if total_workload else 0
 print("过滤后状态分布:", dict(Counter(t['status'] for t in simplified)))
 print("数据源:", _src)
+print("总工作量:", total_workload, "h 超负荷:", overload)
+print("产品分布:", prod_dist)
 
 # 静态快照也显示生成时间（不附加括号提示）
 last_fetch = d.get('fetchTime')
@@ -73,10 +85,13 @@ payload = {
     'sprint': '0814~0821',
     'sprintBegin': data.get('beginDate', '')[:10],
     'sprintEnd': data.get('endDate', '')[:10],
-  'lastFetch': last_fetch,
-  'tokenExp': d.get('tokenExp', ''),
-  'tokenExpired': d.get('tokenExpired', False),
-  'tasks': simplified,
+    'lastFetch': last_fetch,
+    'tokenExp': d.get('tokenExp', ''),
+    'tokenExpired': d.get('tokenExpired', False),
+    'totalWorkload': total_workload,
+    'overload': overload,
+    'productDist': prod_dist,
+    'tasks': simplified,
 }
 data_json = json.dumps(payload, ensure_ascii=False)
 
@@ -123,8 +138,8 @@ HTML = r"""<!DOCTYPE html>
   --p-close:#E4EBDD;--pf-close:#8AA877;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
-body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;padding:24px;line-height:1.5}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;padding:24px;line-height:1.5;min-width:0}
 .wrap{max-width:1440px;margin:0 auto}
 
 .head{background:#F4F1EC;border:1px solid var(--line);border-radius:8px;padding:22px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -137,7 +152,7 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .head .tagline::before{content:"";width:14px;height:1px;background:var(--c-wait-txt);opacity:.5}
 
 /* 顶部指标卡片 */
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin:20px 0}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin:20px 0}
 .card{border-radius:8px;padding:20px 22px;text-align:center;border:1px solid var(--line);cursor:pointer;transition:filter .15s,border-color .15s;user-select:none}
 .card:hover{filter:brightness(.96)}
 .card.active{border:2px solid #C9BBA8}
@@ -148,6 +163,12 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .card-done{background:var(--c-done-bg)} .card-done .num,.card-done .lbl{color:var(--c-done-txt)}
 .card-run{background:var(--c-run-bg)} .card-run .num,.card-run .lbl{color:var(--c-run-txt)}
 .card-wait{background:var(--c-wait-bg)} .card-wait .num,.card-wait .lbl{color:var(--c-wait-txt)}
+.card-prod{background:var(--head-bg)} .card-prod .num,.card-prod .lbl{color:var(--head-txt)}
+.card-prod .ctip{flex-direction:column;align-items:center;gap:2px}
+.prod-bars{height:5px;border-radius:3px;overflow:hidden;display:flex;width:100%;margin-top:4px;max-width:120px;margin-left:auto;margin-right:auto}
+.prod-seg{height:100%}
+.prod-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;font-size:10px;color:var(--sub);margin-top:5px}
+.prod-legend i{display:inline-block;width:6px;height:6px;border-radius:2px;margin-right:2px}
 
 .panel{background:#fff;border-radius:8px;padding:24px 28px;border:1px solid var(--line)}
 .panel h2{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--txt)}
@@ -177,9 +198,9 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .chk.s-dev2:has(input:checked) input{accent-color:var(--st-dev-ac)}
 .chk.s-done:has(input:checked){background:var(--st-close-bg);border-color:var(--st-close-bd);color:var(--st-close-txt);font-weight:600}
 .chk.s-done:has(input:checked) input{accent-color:var(--st-close-ac)}
-.reset-btn{padding:9px 16px;border:1px solid var(--btn-border);border-radius:8px;font-size:13px;background:#fff;color:var(--sub);cursor:pointer;transition:all .15s;font-weight:500}
-.reset-btn:hover{border-color:#C9BBA8;color:var(--txt)}
-.filters .hint{font-size:12px;color:var(--sub);margin-left:auto}
+.reset-btn{padding:9px 16px;border:1px solid var(--warn-bd);border-radius:8px;font-size:13px;background:var(--warn-bg);color:var(--warn-txt);cursor:pointer;transition:all .15s;font-weight:600;margin-left:auto}
+.reset-btn:hover{background:#F3E4D6;color:#7A3A15}
+.filters .hint{font-size:12px;color:var(--sub);margin-left:0}
 
 /* 表格：固定布局 */
 .tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}
@@ -249,6 +270,10 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
+.overload-tip{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:9px 14px;margin-bottom:14px}
+.overload-tip.show{display:flex}
+.overload-tip .em{font-size:15px}
+.overload-tip b{font-weight:700;color:var(--warn-txt)}
 
 /* 翻页器 */
 .pager{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px;font-size:12.5px;color:var(--sub)}
@@ -261,6 +286,12 @@ tbody tr:last-child td{border-bottom:none}
 .end-tip td{border-bottom:none;background:transparent;padding:12px 0}
 .end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
 .end-tip .em{font-size:15px}
+.m-end-tip{display:none}
+@media(max-width:640px){
+  .m-end-tip{display:block;margin-top:14px}
+  .m-end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+  .m-end-tip .em{font-size:15px}
+}
 
 /* 二次确认弹窗 */
 .confirm{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(58,56,53,.32)}
@@ -296,28 +327,36 @@ tbody tr:last-child td{border-bottom:none}
 /* 移动端适配 */
 @media(max-width:640px){
   body{padding:14px;line-height:1.45}
-  .wrap{max-width:100%}
+  .wrap{max-width:100%;min-width:0}
   .head{padding:16px;gap:10px;flex-direction:column;align-items:center;text-align:center}
   .head .title-wrap{min-width:auto;width:100%}
   .head h1{font-size:20px;white-space:normal}
   .head .meta{font-size:12px;margin-top:4px}
   .head .badge{width:100%;text-align:center}
-  .cards{gap:12px;margin:14px 0}
+  .cards{grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
   .card{padding:16px 10px}
+  .card-prod .num{font-size:18px}
+  .card-prod .lbl{font-size:10.5px}
   .card .num{font-size:28px}
   .card .lbl{font-size:11px}
-  .panel{padding:18px 14px}
+  .panel{padding:18px 14px;min-width:0}
   .window-info{font-size:12px;padding:10px 12px}
   .window-info .win-fetch{margin-left:0;width:100%;text-align:right}
   .filters{flex-direction:column;align-items:stretch;gap:12px;padding:12px}
   .filters input{width:100%}
-  .chk-group{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
-  .chk{padding:8px 6px;justify-content:center;font-size:12.5px}
-  .chk span{white-space:nowrap}
+  .chk-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
+  .chk{padding:8px 5px;justify-content:center;text-align:center;font-size:12px;min-height:40px}
+  .chk span{white-space:normal;line-height:1.25}
+  .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
   .tbl-wrap{display:none}
   .mobile-list{display:block}
+  .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
+  .m-card .key{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+  .m-card .name{word-break:break-word}
+  .m-card .meta{gap:8px 10px}
+  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
   .pager{justify-content:space-between}
   .foot{font-size:11px;margin-top:14px}
 }
@@ -356,12 +395,20 @@ tbody tr:last-child td{border-bottom:none}
       <div class="num" id="c-wait">–</div><div class="lbl">未开始</div>
       <div class="ctip">📋 还有这么多没干完，活太多啦～想插需求？挑张看不顺眼的单换掉它 😏</div>
     </div>
+    <div class="card card-prod" data-filter="all" title="按产品累计工作量分布（Top3）">
+      <div class="num" id="c-prod">–</div><div class="lbl">产品耗时冠军</div>
+      <div class="ctip">
+        <div class="prod-bars" id="c-prod-bars"></div>
+        <div class="prod-legend" id="c-prod-legend"></div>
+      </div>
+    </div>
   </div>
 
   <div class="panel">
     <h2>任务明细</h2>
     <div class="window-info" id="win-info"></div>
     <div class="tip"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
+    <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
       <div class="chk-group" id="fstatus">
@@ -371,7 +418,7 @@ tbody tr:last-child td{border-bottom:none}
         <label class="chk s-dev2"><input type="checkbox" value="开发中"><span>开发中</span></label>
         <label class="chk s-done"><input type="checkbox" value="关闭"><span>关闭</span></label>
       </div>
-      <button class="reset-btn" id="reset-btn" type="button">重置</button>
+      <button class="reset-btn" id="reset-btn" type="button">↺ 重置</button>
       <span class="hint" id="count-hint"></span>
     </div>
     <div class="tbl-wrap">
@@ -457,6 +504,23 @@ function updateCards(){
   document.getElementById('c-done').textContent=doneN;
   document.getElementById('c-run').textContent=runN;
   document.getElementById('c-wait').textContent=waitN;
+
+  const prodColors=['#C98A5E','#7FB2DA','#8AA877','#BBA37C','#A8A29C'];
+  if(D.productDist && D.productDist.length){
+    const top=D.productDist[0];
+    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+top.hours+'h</span>';
+    document.getElementById('c-prod-bars').innerHTML=D.productDist.slice(0,4).map((p,i)=>
+      '<div class="prod-seg" style="width:'+p.pct+'%;background:'+prodColors[i%prodColors.length]+'"></div>'
+    ).join('');
+    document.getElementById('c-prod-legend').innerHTML=D.productDist.slice(0,4).map((p,i)=>
+      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+p.hours+'h</span>'
+    ).join('');
+  }
+
+  if(D.overload){
+    document.getElementById('total-workload').textContent=D.totalWorkload;
+    document.getElementById('overload-tip').classList.add('show');
+  }
 }
 
 document.getElementById('sprint').textContent=D.sprint;
@@ -549,13 +613,13 @@ function renderTbody(rows, pageRows, isLastPage){
   }
   tb.innerHTML=html;
 }
-function renderMobile(rows, pageRows){
+function renderMobile(rows, pageRows, isLastPage){
   const el=document.getElementById('mobile-list');
   if(rows.length===0){
     el.innerHTML='<div class="empty"><span class="em">🔍</span>未找到匹配的任务<br>请调整搜索关键词或筛选条件后重试</div>';
     return;
   }
-  el.innerHTML=pageRows.map(t=>{
+  let html=pageRows.map(t=>{
     const [pb,pf]=progClass(t.status);
     return '<div class="m-card" data-key="'+esc(t.key)+'">'+
       '<div class="top">'+
@@ -578,6 +642,10 @@ function renderMobile(rows, pageRows){
       '</div>'+
     '</div>';
   }).join('');
+  if(isLastPage && pageRows.length>0){
+    html+='<div class="m-end-tip"><div class="msg"><span class="em">⛰️</span>任务单还在持续叠加中，工作量已经像小山一样高了~</div></div>';
+  }
+  el.innerHTML=html;
 }
 function renderPager(total){
   const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
@@ -602,7 +670,7 @@ function render(){
   const totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   const isLastPage=currentPage>=totalPages;
   renderTbody(rows, pageRows, isLastPage);
-  renderMobile(rows, pageRows);
+  renderMobile(rows, pageRows, isLastPage);
 }
 
 /* 二次确认弹窗 + Toast（点击任务号） */
