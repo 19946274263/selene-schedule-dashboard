@@ -217,7 +217,7 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .filters .hint{font-size:12px;color:var(--sub);margin-left:0}
 
 /* 表格：固定布局 */
-.tbl-wrap{overflow:auto;max-height:430px;border:1px solid var(--line);border-radius:8px}
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}
 table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1000px;table-layout:fixed}
 thead th{position:sticky;top:0;background:var(--head-bg);z-index:2;text-align:left;padding:13px 12px;font-weight:600;color:var(--head-txt);border-bottom:1px solid var(--line);white-space:nowrap}
 tbody td{padding:14px 12px;border-bottom:1px solid var(--divider);vertical-align:middle;background:var(--row-bg);overflow:hidden}
