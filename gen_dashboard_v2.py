@@ -84,13 +84,16 @@ last_fetch = d.get('fetchTime')
 if not last_fetch:
     last_fetch = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
+_today = datetime.date.today()
+_s_begin = (_today - datetime.timedelta(days=2)).strftime('%Y-%m-%d')
+_s_end = (_today + datetime.timedelta(days=4)).strftime('%Y-%m-%d')
 payload = {
-    'empName': emp.get('employeeName', ''),
-    'empId': emp.get('employee', ''),
-    'dept': emp.get('department', ''),
-    'sprint': '0814~0821',
-    'sprintBegin': data.get('beginDate', '')[:10],
-    'sprintEnd': data.get('endDate', '')[:10],
+  'empName': emp.get('employeeName', ''),
+  'empId': emp.get('employee', ''),
+  'dept': emp.get('department', ''),
+  'sprint': _s_begin[5:].replace('-','')+'~'+_s_end[5:].replace('-',''),
+  'sprintBegin': _s_begin,
+  'sprintEnd': _s_end,
     'lastFetch': last_fetch,
     'tokenExp': d.get('tokenExp', ''),
     'tokenExpired': d.get('tokenExpired', False),
@@ -288,9 +291,9 @@ tbody tr:last-child td{border-bottom:none}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
-.overload-tip{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:9px 14px;margin-bottom:14px}
-.overload-tip.show{display:flex}
-.overload-tip .em{font-size:15px}
+.overload-tip{display:none;align-items:center;gap:6px;font-size:12px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:999px;padding:4px 12px;margin-left:12px}
+.overload-tip.show{display:inline-flex}
+.overload-tip .em{font-size:13px}
 .overload-tip b{font-weight:700;color:var(--warn-txt)}
 
 /* 翻页器 */
@@ -322,7 +325,7 @@ tbody tr:last-child td{border-bottom:none}
 .m-card{background:var(--row-bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px;cursor:pointer;transition:background .12s}
 .m-card:hover{background:var(--row-hover)}
 .m-card:active{background:#F3EEE6}
-.m-card .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.m-card .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .m-card .key{color:var(--wait-txt);font-weight:600;font-size:14px;text-decoration:none;border-bottom:1.5px dashed transparent}
 .m-card .key:hover{border-bottom-color:var(--wait-txt)}
 .m-card .name{color:#A8A29C;font-size:12.5px;line-height:1.45;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -416,13 +419,13 @@ tbody tr:last-child td{border-bottom:none}
   <div class="panel">
     <div class="panel-head">
       <h2>任务明细</h2>
+      <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></span>
     </div>
     <div class="tip banner-fetch">
       <span class="em">🍵</span>
       <span class="banner-text">排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span>
       <span class="banner-fetch" id="banner-fetch"></span>
     </div>
-    <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
       <div class="chk-group" id="fstatus">
@@ -549,6 +552,13 @@ const STATUS_TAG={
   '关闭':'<span class="tag tag-done">关闭</span>',
   '已解决':'<span class="tag tag-resolved">已解决</span>',
 };
+/* 移动端状态用内联样式渲染（不依赖 .tag 类的 CSS 变量，部分手机浏览器不生效），确保一定可见 */
+const ST_BG={'测试中':'#E6EFF6','开发中':'#F1E0D3','开始':'#EFE7DA','开发完成':'#FBF0CE','关闭':'#E4EBDD','已解决':'#E4EBDD'};
+const ST_FG={'测试中':'#2C6CA3','开发中':'#9A5B36','开始':'#8A7250','开发完成':'#8A630B','关闭':'#4F6342','已解决':'#4F6342'};
+function statusPill(s){
+  const bg=ST_BG[s]||'#EDEAE5', fg=ST_FG[s]||'#54504B';
+  return '<span style="display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;background:'+bg+';color:'+fg+';">'+esc(s)+'</span>';
+}
 function progClass(s){
   if(s==='测试中') return ['p-test','pf-test'];
   if(s==='开始') return ['p-start','pf-start'];
@@ -593,7 +603,7 @@ function renderTbody(rows, pageRows, isLastPage){
       '</div>';
     return '<tr data-key="'+esc(t.key)+'">'+
       '<td class="task-cell">'+
-        '<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
+        '<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
         '<div class="task-name" title="'+esc(t.summary)+'">'+esc(t.summary)+'</div>'+
       '</td>'+
       '<td>'+(STATUS_TAG[t.status]||esc(t.status))+'</td>'+
@@ -620,7 +630,8 @@ function renderMobile(rows, pageRows, isLastPage){
     const [pb,pf]=progClass(t.status);
     return '<div class="m-card" data-key="'+esc(t.key)+'">'+
       '<div class="top">'+
-        '<a class="key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
+        '<a class="key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
+        statusPill(t.status)+
       '</div>'+
       '<div class="name">'+esc(t.summary)+'</div>'+
       '<div class="prog-wrap">'+
@@ -630,7 +641,7 @@ function renderMobile(rows, pageRows, isLastPage){
         '</div>'+
       '</div>'+
       '<div class="meta">'+
-        '<span><span class="lb">Jira 状态</span>'+(STATUS_TAG[t.status]||esc(t.status))+'</span>'+
+        '<span><span class="lb">Jira 状态</span>'+statusPill(t.status)+'</span>'+
         '<span><span class="lb">工作量</span>'+t.workload+'</span>'+
         '<span><span class="lb">开始</span>'+esc(t.kickoff)+'</span>'+
         '<span><span class="lb">产品</span>'+esc(t.product||'—')+'</span>'+
@@ -670,24 +681,7 @@ function render(){
   renderMobile(rows, pageRows, isLastPage);
 }
 
-/* 点击任务号 → 直接在新标签打开 Jira */
-function openJira(key){
-  openJiraInNewTab(key);
-}
-window.openJira = openJira;
-function openJiraInNewTab(key){
-  // 在移动端/微信内置浏览器中，window.open 常被拦截；用临时 <a target="_blank"> 点击更可靠
-  const a=document.createElement('a');
-  a.href=jiraUrl(key);
-  a.target='_blank';
-  a.rel='noopener noreferrer';
-  a.style.position='fixed';
-  a.style.opacity='0';
-  a.style.pointerEvents='none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},100);
-}
+/* 任务号已是真实 <a href target="_blank"> 链接，原生跳转，移动端/微信均可靠 */
 let toastTimer=null;
 function showToast(msg){
   const el=document.getElementById('toast');
@@ -736,7 +730,7 @@ const drawer=document.getElementById('drawer');
 function openDrawer(t){
   const [pb,pf]=progClass(t.status);
   const rows=[
-    ['任务号','<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'],
+    ['任务号','<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'],
     ['任务名称',esc(t.summary)],
     ['Jira 状态',(STATUS_TAG[t.status]||esc(t.status))],
     ['进度','<div class="prog" style="margin-top:2px"><span class="prog-pct">'+t.progress+'%</span><div class="prog-bar '+pb+'"><div class="prog-fill '+pf+'" style="width:'+t.progress+'%"></div></div></div>'],

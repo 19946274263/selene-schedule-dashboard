@@ -185,9 +185,9 @@ tbody tr:last-child td{border-bottom:none}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
-.overload-tip{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:9px 14px;margin-bottom:14px}
-.overload-tip.show{display:flex}
-.overload-tip .em{font-size:15px}
+.overload-tip{display:none;align-items:center;gap:6px;font-size:12px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:999px;padding:4px 12px;margin-left:12px}
+.overload-tip.show{display:inline-flex}
+.overload-tip .em{font-size:13px}
 .overload-tip b{font-weight:700;color:var(--warn-txt)}
 
 /* 翻页器 */
@@ -219,7 +219,7 @@ tbody tr:last-child td{border-bottom:none}
 .m-card{background:var(--row-bg);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px;cursor:pointer;transition:background .12s}
 .m-card:hover{background:var(--row-hover)}
 .m-card:active{background:#F3EEE6}
-.m-card .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.m-card .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .m-card .key{color:var(--wait-txt);font-weight:600;font-size:14px;text-decoration:none;border-bottom:1.5px dashed transparent}
 .m-card .key:hover{border-bottom-color:var(--wait-txt)}
 .m-card .name{color:#A8A29C;font-size:12.5px;line-height:1.45;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -313,13 +313,13 @@ tbody tr:last-child td{border-bottom:none}
   <div class="panel">
     <div class="panel-head">
       <h2>任务明细</h2>
+      <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></span>
     </div>
     <div class="tip banner-fetch">
       <span class="em">🍵</span>
       <span class="banner-text">排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span>
       <span class="banner-fetch" id="banner-fetch"></span>
     </div>
-    <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
       <div class="chk-group" id="fstatus">
@@ -369,7 +369,7 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 try {
-const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "sprint": "0814~0821", "sprintBegin": "2026-08-15", "sprintEnd": "2026-08-22", "lastFetch": "2026-08-15 00:24", "tokenExp": "2026-08-16 00:18", "tokenExpired": false, "totalWorkload": 41.0, "overload": true, "productDist": [{"product": "sop-门店运营平台", "hours": 24.0, "short": "sop", "pct": 58.5}, {"product": "sas-销售中台", "hours": 13.0, "short": "sas", "pct": 31.7}, {"product": "sy-dj-海鼎到家", "hours": 4.0, "short": "dj", "pct": 9.8}], "tasks": [{"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-15", "due": "2026-08-17", "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪"}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "status": "开始", "progress": 0, "workload": 0, "kickoff": "2026-08-15", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校"}, {"key": "SAS-13744", "summary": "绿叶-到家小程序配送单截停失败后 order.intercept 未回滚优化", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-17", "due": "2026-08-17", "done": false, "product": "sas-销售中台", "proj": "湖南绿叶水果连锁_POS_年度服务项目(202511-202611)", "starter": "杨海校"}, {"key": "SAS-13822", "summary": "【金粒门】到家小程序给到CRM的订单号信息更正为到家订单交易号", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sy-dj-海鼎到家", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "苗圃"}, {"key": "SAS-13849", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter-套餐", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13728", "summary": "零食很能嗨-自助销售单的特征码同步H6及pos", "status": "开发完成", "progress": 0, "workload": 2.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零小嗨新增自助收银(202606-202706)", "starter": "杨海校"}, {"key": "SAS-13752", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13754", "summary": "泡泡玛特国际_CPOS对接客服系统增加推送secure_id", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "北京泡泡玛特潮流玩具专卖_POS_泡泡玛特北美1开发合同(202510-202610)", "starter": "杨海校"}, {"key": "SAS-13417", "summary": "千家惠-自助收银机支持核销文峰集团会员系统发售的卡券", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13418", "summary": "新宇贸易_自助收银对接微盟POS通", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13552", "summary": "【桂林力源】巡检支持点检项配置", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "张家浩"}, {"key": "SAS-13730", "summary": "厦门元初. 自助收银机对接元初自研支付中台需求（优化需求）", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sas-销售中台", "proj": "福建厦门元初食品_POS_元初人日锁定合同(202604-202704)", "starter": "杨海校"}]};
+const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "sprint": "0813~0819", "sprintBegin": "2026-08-13", "sprintEnd": "2026-08-19", "lastFetch": "2026-08-15 01:51", "tokenExp": "2026-08-16 00:18", "tokenExpired": false, "totalWorkload": 52.0, "overload": true, "productDist": [{"product": "sop-门店运营平台", "hours": 28.0, "short": "sop", "pct": 53.8}, {"product": "sop-qcy-轻餐饮运营平台", "hours": 8.0, "short": "qcy", "pct": 15.4}, {"product": "jyzs-经营助手", "hours": 8.0, "short": "jyzs", "pct": 15.4}, {"product": "sas-销售中台", "hours": 4.0, "short": "sas", "pct": 7.7}, {"product": "sy-dj-海鼎到家", "hours": 4.0, "short": "dj", "pct": 7.7}], "tasks": [{"key": "SOP-13671", "summary": "【海鼎零售App】【混开版本】【督导助手】标准版本.国际化性能测试", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-13", "due": "2026-08-13", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "徐妍琪"}, {"key": "SAS-13762", "summary": "门店运营平台巡检模块优化", "status": "测试中", "progress": 90, "workload": 4.0, "kickoff": "2026-08-13", "due": "2026-08-14", "done": false, "product": "sop-门店运营平台", "proj": "桂林市力源连锁超市_POS_年度服务项目(202407-202506)", "starter": "张家浩"}, {"key": "SAS-13850", "summary": "【马来全家】KDS一期需求-套餐", "status": "测试中", "progress": 50, "workload": 8.0, "kickoff": "2026-08-13", "due": "2026-08-14", "done": false, "product": "sop-qcy-轻餐饮运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SOP-13753", "summary": "【督导助手】巡检模块优化", "status": "开发中", "progress": 0, "workload": 0, "kickoff": "2026-08-13", "due": "2026-08-14", "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "黄龙飞"}, {"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-13", "due": "2026-08-17", "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪"}, {"key": "JYZS-1086", "summary": "【经营助手】诚信志远增加销售品模块", "status": "测试中", "progress": 0, "workload": 8.0, "kickoff": "2026-08-14", "due": "2026-08-14", "done": false, "product": "jyzs-经营助手", "proj": "郑州诚信志远_POS_年度服务项目(202601-202601)", "starter": "郑綮燎"}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "status": "开始", "progress": 0, "workload": 0, "kickoff": "2026-08-14", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校"}, {"key": "SAS-13744", "summary": "绿叶-到家小程序配送单截停失败后 order.intercept 未回滚优化", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-17", "due": "2026-08-17", "done": false, "product": "sas-销售中台", "proj": "湖南绿叶水果连锁_POS_年度服务项目(202511-202611)", "starter": "杨海校"}, {"key": "SAS-13822", "summary": "【金粒门】到家小程序给到CRM的订单号信息更正为到家订单交易号", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sy-dj-海鼎到家", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "苗圃"}, {"key": "SAS-13849", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter-套餐", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13728", "summary": "零食很能嗨-自助销售单的特征码同步H6及pos", "status": "开发完成", "progress": 0, "workload": 2.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零小嗨新增自助收银(202606-202706)", "starter": "杨海校"}, {"key": "SAS-13752", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13754", "summary": "泡泡玛特国际_CPOS对接客服系统增加推送secure_id", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "北京泡泡玛特潮流玩具专卖_POS_泡泡玛特北美1开发合同(202510-202610)", "starter": "杨海校"}]};
 
 // 移动端检测：用于精简头部头像与产品耗时卡
 const IS_MOBILE = window.matchMedia('(max-width:640px)').matches || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -446,6 +446,13 @@ const STATUS_TAG={
   '关闭':'<span class="tag tag-done">关闭</span>',
   '已解决':'<span class="tag tag-resolved">已解决</span>',
 };
+/* 移动端状态用内联样式渲染（不依赖 .tag 类的 CSS 变量，部分手机浏览器不生效），确保一定可见 */
+const ST_BG={'测试中':'#E6EFF6','开发中':'#F1E0D3','开始':'#EFE7DA','开发完成':'#FBF0CE','关闭':'#E4EBDD','已解决':'#E4EBDD'};
+const ST_FG={'测试中':'#2C6CA3','开发中':'#9A5B36','开始':'#8A7250','开发完成':'#8A630B','关闭':'#4F6342','已解决':'#4F6342'};
+function statusPill(s){
+  const bg=ST_BG[s]||'#EDEAE5', fg=ST_FG[s]||'#54504B';
+  return '<span style="display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;background:'+bg+';color:'+fg+';">'+esc(s)+'</span>';
+}
 function progClass(s){
   if(s==='测试中') return ['p-test','pf-test'];
   if(s==='开始') return ['p-start','pf-start'];
@@ -490,7 +497,7 @@ function renderTbody(rows, pageRows, isLastPage){
       '</div>';
     return '<tr data-key="'+esc(t.key)+'">'+
       '<td class="task-cell">'+
-        '<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
+        '<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
         '<div class="task-name" title="'+esc(t.summary)+'">'+esc(t.summary)+'</div>'+
       '</td>'+
       '<td>'+(STATUS_TAG[t.status]||esc(t.status))+'</td>'+
@@ -517,7 +524,8 @@ function renderMobile(rows, pageRows, isLastPage){
     const [pb,pf]=progClass(t.status);
     return '<div class="m-card" data-key="'+esc(t.key)+'">'+
       '<div class="top">'+
-        '<a class="key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'+
+        '<a class="key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
+        statusPill(t.status)+
       '</div>'+
       '<div class="name">'+esc(t.summary)+'</div>'+
       '<div class="prog-wrap">'+
@@ -527,7 +535,7 @@ function renderMobile(rows, pageRows, isLastPage){
         '</div>'+
       '</div>'+
       '<div class="meta">'+
-        '<span><span class="lb">Jira 状态</span>'+(STATUS_TAG[t.status]||esc(t.status))+'</span>'+
+        '<span><span class="lb">Jira 状态</span>'+statusPill(t.status)+'</span>'+
         '<span><span class="lb">工作量</span>'+t.workload+'</span>'+
         '<span><span class="lb">开始</span>'+esc(t.kickoff)+'</span>'+
         '<span><span class="lb">产品</span>'+esc(t.product||'—')+'</span>'+
@@ -567,24 +575,7 @@ function render(){
   renderMobile(rows, pageRows, isLastPage);
 }
 
-/* 点击任务号 → 直接在新标签打开 Jira */
-function openJira(key){
-  openJiraInNewTab(key);
-}
-window.openJira = openJira;
-function openJiraInNewTab(key){
-  // 在移动端/微信内置浏览器中，window.open 常被拦截；用临时 <a target="_blank"> 点击更可靠
-  const a=document.createElement('a');
-  a.href=jiraUrl(key);
-  a.target='_blank';
-  a.rel='noopener noreferrer';
-  a.style.position='fixed';
-  a.style.opacity='0';
-  a.style.pointerEvents='none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},100);
-}
+/* 任务号已是真实 <a href target="_blank"> 链接，原生跳转，移动端/微信均可靠 */
 let toastTimer=null;
 function showToast(msg){
   const el=document.getElementById('toast');
@@ -633,7 +624,7 @@ const drawer=document.getElementById('drawer');
 function openDrawer(t){
   const [pb,pf]=progClass(t.status);
   const rows=[
-    ['任务号','<a class="task-key" onclick="openJira('+JSON.stringify(t.key)+')">'+esc(t.key)+'</a>'],
+    ['任务号','<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'],
     ['任务名称',esc(t.summary)],
     ['Jira 状态',(STATUS_TAG[t.status]||esc(t.status))],
     ['进度','<div class="prog" style="margin-top:2px"><span class="prog-pct">'+t.progress+'%</span><div class="prog-bar '+pb+'"><div class="prog-fill '+pf+'" style="width:'+t.progress+'%"></div></div></div>'],

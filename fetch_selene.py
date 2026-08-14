@@ -56,11 +56,12 @@ def decode_token_exp(token):
     return None
 
 
-def window_days(n=7):
+def window_days():
     today = bj_now().date()
-    end = today + datetime.timedelta(days=n)
+    begin = today - datetime.timedelta(days=2)
+    end = today + datetime.timedelta(days=4)
     f = lambda d: d.strftime("%Y-%m-%d")
-    return f(today), f(end)
+    return f(begin), f(end)
 
 
 def copy_to_deploy():
@@ -110,7 +111,7 @@ def fetch():
     else:
         print("[警告] 无法解析 token 有效期，仍尝试请求（若返回 401/403 会标记过期）。")
 
-    begin, end = window_days(7)
+    begin, end = window_days()
     payload = {
         "beginDate": begin,
         "endDate": end,
