@@ -292,7 +292,7 @@ tbody tr:last-child td{border-bottom:none}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
-.overload-tip{display:none;align-items:center;gap:4px;font-size:12px;color:var(--warn-txt);margin-left:12px}
+.overload-tip{display:none;align-items:center;gap:4px;font-size:12px;color:var(--warn-txt);margin-left:auto}
 .overload-tip.show{display:inline-flex}
 .overload-tip .em{font-size:13px}
 .overload-tip b{font-weight:700;color:var(--warn-txt)}
@@ -394,7 +394,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="cards" id="cards">
     <div class="card card-total" data-filter="all" title="当前周期内全部任务">
       <div class="num" id="c-total">–</div><div class="lbl">任务总数</div>
-      <div class="ctip">🗓️ 未来 7 天排期全貌</div>
+      <div class="ctip">🗓️ 当前周期内排期全貌</div>
     </div>
     <div class="card card-done" data-filter="关闭" title="已完成：状态为【关闭】的任务">
       <div class="num" id="c-done">–</div><div class="lbl">已完成</div>
@@ -420,7 +420,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="panel">
     <div class="panel-head">
       <h2>任务明细</h2>
-      <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></span>
+      <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>当前周期内工作量已达 <b id="total-workload">0</b>h，已超负荷运作~</span></span>
     </div>
     <div class="tip banner-fetch">
       <span class="em">🍵</span>
@@ -457,7 +457,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="pager" id="pager"></div>
   </div>
 
-  <div class="foot">由 Selene 人力排期数据生成 · 看板按打开当天动态显示未来 7 天排期 · 可分享给任何人查看 · 点击任务号直达 <span>Jira</span></div>
+  <div class="foot">由 Selene 人力排期数据生成 · 点击任务号直达 <span>Jira</span></div>
 </div>
 
 <div class="drawer" id="drawer">
