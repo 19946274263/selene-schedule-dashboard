@@ -66,6 +66,35 @@ curl -X POST "http://selene.hd123.cn:52163/selene/v1/plan/gantt/employee/query" 
 
 3. 重新运行 `python gen_dashboard_v2.py` 生成看板。
 
+## Token 更新 SOP（重要）
+
+Selene 的 token 是 **JWT，有效期约 24 小时**，过期后接口返回 401/403。按以下步骤更新：
+
+1. 用浏览器登录 Selene 网页（`http://selene.hd123.cn:52163/selene-web/`）。
+2. 打开 DevTools → **Application** → **Local Storage** → `http://selene.hd123.cn:52163`。
+3. 找到 `vuex`（或 `token`）字段，复制其中的 token 字符串。
+4. 把新 token 写入 `selene_token.txt`（同目录，已被 .gitignore 排除，不会提交）。
+   - 或直接设置环境变量：`set SELENE_TOKEN=新token`。
+5. 运行 `python fetch_selene.py` 重新拉取并生成。
+6. 若要看板对外分享链接也更新，请让 AI 助手重新 deploy（或自行发布 `deploy/index.html`）。
+
+> 当 token 过期时，`fetch_selene.py` 会**自动沿用上一次成功的快照**并重新生成看板，
+> 看板顶部会显示「⚠️ 数据 token 已过期，请到浏览器重新复制 token 后刷新」，
+> 这样你和同事一打开链接就能看到提示，不会看到报错。
+
+## 自动化刷新方案
+
+**本地每小时自动刷新（推荐）：** 双击运行 `setup_autosync.bat`，
+会用 Windows 任务计划创建名为 `SeleneDashboardSync` 的每小时任务，
+自动执行 `fetch_selene.py`（拉取 + 生成 + 同步到 `deploy/`）。日志见 `selene_sync.log`。
+
+**公开链接更新：** 由于对外分享链接需要一次部署动作，建议节奏如下——
+- 每天上班时，若看板提示 token 已过期：复制新 token → 运行 fetch → 让 AI 重新 deploy。
+- 否则每小时任务已保证本地数据最新，公开链接每天 deploy 一次即可。
+
+**全流程自动化卡点：** 因 Selene token 需要浏览器登录态才能获取（自动登录受服务端 DTO 限制无法脚本化），
+目前无法做到「无人值守永久自动刷新」，必须每天人工复制一次 token。这是唯一需手动的环节。
+
 ## 看板设计要点（已确认的需求）
 
 - 打开时按「当天 ~ 当天+7天」动态筛选显示（数据窗口随打开日期后移）。
