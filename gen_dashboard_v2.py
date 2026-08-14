@@ -41,6 +41,7 @@ for t in tasks_raw:
         continue
     k = to_iso(t.get('ganttKickoffDate') or t.get('kickoffDate'))
     e = to_iso(t.get('ganttDueDate') or t.get('dueDate'))
+    prev = t.get('prev') or {}
     simplified.append({
         'key': key,
         'summary': t.get('summary', ''),
@@ -52,7 +53,9 @@ for t in tasks_raw:
         'done': bool(t.get('done', False)),
         'product': t.get('product', ''),
         'proj': t.get('customerProject', ''),
-        'starter': t.get('starterName', ''),
+        'starterName': t.get('starterName', ''),
+        'starter': t.get('starter', ''),
+        'prev': {'employeeName': prev.get('employeeName', ''), 'employee': prev.get('employee', '')},
     })
 
 # 按时间先后排序（kickoff 升序，due 升序）
@@ -74,6 +77,7 @@ def short_name(p):
 prod_dist = sorted([{'product': p, 'hours': round(h, 1), 'short': short_name(p)} for p, h in prod_wl.items()], key=lambda x: -x['hours'])
 for item in prod_dist:
     item['pct'] = round(item['hours'] / total_workload * 100, 1) if total_workload else 0
+product_champ = {'short': (prod_dist[0]['short'] if prod_dist else '—').upper(), 'hours': (prod_dist[0]['hours'] if prod_dist else 0)}
 print("过滤后状态分布:", dict(Counter(t['status'] for t in simplified)))
 print("数据源:", _src)
 print("总工作量:", total_workload, "h 超负荷:", overload)
@@ -100,6 +104,7 @@ payload = {
     'totalWorkload': total_workload,
     'overload': overload,
     'productDist': prod_dist,
+    'productChamp': product_champ,
     'tasks': simplified,
 }
 data_json = json.dumps(payload, ensure_ascii=False)
@@ -160,12 +165,11 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .head .tagline{font-size:12px;color:var(--sub);margin-top:5px;opacity:.88;display:flex;align-items:center;gap:5px}
 .head .tagline::before{content:"";width:14px;height:1px;background:var(--c-wait-txt);opacity:.5}
 
-/* 移动端精简：隐藏头像与产品耗时卡 */
+/* 移动端精简：隐藏头像 */
 .mobile .head .avatar{display:none}
-.mobile .card-prod{display:none}
 
 /* 顶部指标卡片 */
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin:20px 0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:20px 0}
 .card{border-radius:8px;padding:20px 22px;text-align:center;border:1px solid var(--line);cursor:pointer;transition:filter .15s,border-color .15s;user-select:none}
 .card:hover{filter:brightness(.96)}
 .card.active{border:2px solid #C9BBA8}
@@ -176,12 +180,7 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .card-done{background:var(--c-done-bg)} .card-done .num,.card-done .lbl{color:var(--c-done-txt)}
 .card-run{background:var(--c-run-bg)} .card-run .num,.card-run .lbl{color:var(--c-run-txt)}
 .card-wait{background:var(--c-wait-bg)} .card-wait .num,.card-wait .lbl{color:var(--c-wait-txt)}
-.card-prod{background:var(--head-bg)} .card-prod .num,.card-prod .lbl{color:var(--head-txt)}
-.card-prod .ctip{flex-direction:column;align-items:center;gap:2px}
-.prod-bars{height:5px;border-radius:3px;overflow:hidden;display:flex;width:100%;margin-top:4px;max-width:120px;margin-left:auto;margin-right:auto}
-.prod-seg{height:100%}
-.prod-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;font-size:10px;color:var(--sub);margin-top:5px}
-.prod-legend i{display:inline-block;width:6px;height:6px;border-radius:2px;margin-right:2px}
+.prod-champ-tip{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sub);margin:-8px 0 14px}
 
 .panel{background:#fff;border-radius:8px;padding:24px 28px;border:1px solid var(--line)}
 .panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -346,8 +345,6 @@ tbody tr:last-child td{border-bottom:none}
   .head .badge{width:100%;text-align:center}
   .cards{grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
   .card{padding:16px 10px}
-  .card-prod .num{font-size:18px}
-  .card-prod .lbl{font-size:10.5px}
   .card .num{font-size:28px}
   .card .lbl{font-size:11px}
   .card .ctip{font-size:11px}
@@ -356,14 +353,14 @@ tbody tr:last-child td{border-bottom:none}
   .window-info .win-fetch{margin-left:0;width:100%;text-align:right}
   .filters{flex-direction:column;align-items:stretch;gap:12px;padding:12px}
   .filters input{width:100%}
-  .chk-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  .chk-group{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:8px;width:100%}
   .chk{padding:8px 10px;justify-content:flex-start;text-align:left;font-size:12px;flex-direction:row;gap:6px;min-height:38px;width:100%;min-width:0;overflow:hidden}
-  .chk input{flex-shrink:0}
+  .chk input{flex-shrink:0;width:15px;height:15px}
   .chk span{flex:1 1 auto;min-width:0;white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;text-align:left;font-weight:500}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
-  .banner-fetch{margin-left:0;width:100%;text-align:right;flex-basis:100%;margin-top:2px}
+  .banner-fetch{margin-left:0;width:100%;text-align:left;flex-basis:100%;margin-top:2px}
   .tbl-wrap{display:none}
   .mobile-list{display:block}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
@@ -409,14 +406,8 @@ tbody tr:last-child td{border-bottom:none}
       <div class="num" id="c-wait">–</div><div class="lbl">未开始</div>
       <div class="ctip">📋 还有这么多没干完，活太多啦～想插需求？挑张看不顺眼的单换掉它 😏</div>
     </div>
-    <div class="card card-prod" data-filter="all" title="按产品累计工作量分布（Top3）">
-      <div class="num" id="c-prod">–</div><div class="lbl">产品耗时冠军</div>
-      <div class="ctip">
-        <div class="prod-bars" id="c-prod-bars"></div>
-        <div class="prod-legend" id="c-prod-legend"></div>
-      </div>
-    </div>
   </div>
+  <div class="prod-champ-tip">🏆 产品耗时冠军：<b>__CHAMP_SHORT__</b>（__CHAMP_HOURS__h）</div>
 
   <div class="panel">
     <div class="panel-head">
@@ -521,18 +512,6 @@ function updateCards(){
   document.getElementById('c-done').textContent=doneN;
   document.getElementById('c-run').textContent=runN;
   document.getElementById('c-wait').textContent=waitN;
-
-  const prodColors=['#C98A5E','#7FB2DA','#8AA877','#BBA37C','#A8A29C'];
-  if(D.productDist && D.productDist.length){
-    const top=D.productDist[0];
-    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+fmtH(top.hours)+'h</span>';
-    document.getElementById('c-prod-bars').innerHTML=D.productDist.slice(0,4).map((p,i)=>
-      '<div class="prod-seg" style="width:'+p.pct+'%;background:'+prodColors[i%prodColors.length]+'"></div>'
-    ).join('');
-    document.getElementById('c-prod-legend').innerHTML=D.productDist.slice(0,4).map((p,i)=>
-      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+fmtH(p.hours)+'h</span>'
-    ).join('');
-  }
 
   if(D.overload){
     document.getElementById('total-workload').textContent=fmtH(D.totalWorkload);
@@ -785,7 +764,7 @@ render();
 </html>
 """
 
-html = HTML.replace('__DATA__', data_json)
+html = HTML.replace('__DATA__', data_json).replace('__CHAMP_SHORT__', product_champ['short']).replace('__CHAMP_HOURS__', str(int(product_champ['hours'])))
 with open(OUT, 'w', encoding='utf-8') as f:
     f.write(html)
 print("written:", OUT, os.path.getsize(OUT), "bytes")
