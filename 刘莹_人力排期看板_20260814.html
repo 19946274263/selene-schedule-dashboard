@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刘莹 · 人力排期看板（冲刺 20260814）</title>
+<style>
+:root{
+  --bg:#f3f5f9; --card:#ffffff; --line:#e5e9f2;
+  --txt:#1f2937; --sub:#6b7280; --brand:#2563eb;
+  --green:#10b981; --green-l:#d1fae5;
+  --red:#ef4444; --red-l:#fee2e2;
+  --orange:#f59e0b; --orange-l:#fef3c7;
+  --blue-l:#dbeafe;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;padding:24px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto}
+.head{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:16px;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.head h1{font-size:22px;font-weight:700}
+.head .meta{font-size:13px;opacity:.92;margin-top:6px}
+.head .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:8px 14px;border-radius:999px;font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card .num{font-size:30px;font-weight:800;line-height:1.2}
+.card .lbl{font-size:13px;color:var(--sub);margin-top:4px}
+.card .sub{font-size:12px;color:var(--sub);margin-top:2px}
+.n-green{color:var(--green)} .n-red{color:var(--red)} .n-orange{color:var(--orange)} .n-blue{color:var(--brand)}
+.panel{background:var(--card);border-radius:12px;padding:22px 24px;border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:18px}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.panel h2::before{content:"";width:4px;height:16px;background:var(--brand);border-radius:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:960px){.row2{grid-template-columns:1fr}}
+/* 状态分布 */
+.psbar{display:flex;height:26px;border-radius:8px;overflow:hidden;margin-bottom:16px;background:#eef1f6}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--sub)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend b{color:var(--txt)}
+/* 项目分布 */
+.proj-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}
+.proj-name{width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.proj-bar{flex:1;height:14px;background:#eef1f6;border-radius:7px;overflow:hidden}
+.proj-fill{height:100%;background:linear-gradient(90deg,#60a5fa,#2563eb);border-radius:7px}
+.proj-num{width:36px;text-align:right;color:var(--sub)}
+/* 甘特 */
+.gantt{overflow-x:auto}
+.gantt-inner{min-width:1080px}
+.gantt-head{display:grid;grid-template-columns:320px 1fr;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2}
+.gantt-title{padding:10px 12px;font-size:13px;font-weight:600;color:var(--sub);border-right:1px solid var(--line)}
+.gantt-axis{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.gantt-day{text-align:center;font-size:12px;padding:10px 0 8px;border-left:1px solid var(--line);color:var(--sub)}
+.gantt-day.off{color:#c0c7d1}
+.gantt-day.today{color:var(--brand);font-weight:700;background:var(--blue-l)}
+.gantt-row{display:grid;grid-template-columns:320px 1fr;border-bottom:1px solid #f0f2f7;min-height:44px}
+.gantt-row:hover{background:#f8fafc}
+.gantt-label{padding:7px 12px;font-size:12.5px;display:flex;align-items:center;gap:6px;border-right:1px solid var(--line);overflow:hidden}
+.gantt-label .k{font-weight:600;color:var(--brand);white-space:nowrap}
+.gantt-label .s{color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt-track{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+.gantt-track::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/14 - 1px),#eef1f6 calc(100%/14 - 1px),#eef1f6 calc(100%/14));opacity:.9}
+.gantt-cell{height:100%}
+.gantt-bar{position:absolute;top:9px;height:26px;border-radius:5px;font-size:11px;color:#fff;display:flex;align-items:center;padding:0 6px;overflow:hidden;white-space:nowrap;cursor:default;transition:filter .15s}
+.gantt-bar:hover{filter:brightness(1.1);z-index:3}
+.bar-done{background:var(--green)}
+.bar-done-delayed{background:#34d399;color:#065f46}
+.bar-delayed{background:var(--red)}
+.bar-risk{background:var(--orange)}
+.bar-todo{background:#94a3b8}
+.flag{position:absolute;top:4px;font-size:10px;color:var(--red);font-weight:700}
+/* 表格 */
+.tbl-wrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1200px}
+thead th{position:sticky;top:0;background:#f8fafc;z-index:2;text-align:left;padding:10px 12px;font-weight:600;color:var(--sub);border-bottom:2px solid var(--line);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid #f0f2f7;vertical-align:top}
+tbody tr:hover{background:#f8fafc}
+.key{color:var(--brand);font-weight:600;white-space:nowrap}
+.summary{max-width:320px;min-width:200px}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag-fin{background:var(--green-l);color:#047857}
+.tag-fin-d{background:#d1fae5;color:#065f46}
+.tag-del{background:var(--red-l);color:#b91c1c}
+.tag-risk{background:var(--orange-l);color:#b45309}
+.tag-run{background:var(--blue-l);color:#1d4ed8}
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input,.filters select{padding:7px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--txt);outline:none}
+.filters input:focus,.filters select:focus{border-color:var(--brand)}
+.filters input{width:260px}
+.foot{margin-top:20px;text-align:center;color:var(--sub);font-size:12px}
+.mono{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>刘莹 · 人力排期看板</h1>
+      <div class="meta">测试二部 · 冲刺 <b>20260814</b>（2026-08-03 ~ 2026-08-16）· 数据来源：Selene 人力排期</div>
+    </div>
+    <div class="badge">导出时间：2026-08-14 17:30</div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="num n-blue" id="c-total">–</div><div class="lbl">任务总数</div></div>
+    <div class="card"><div class="num n-green" id="c-done">–</div><div class="lbl">已完成</div></div>
+    <div class="card"><div class="num" id="c-run">–</div><div class="lbl">进行中 / 未开始</div></div>
+    <div class="card"><div class="num n-red" id="c-delayed">–</div><div class="lbl">已延迟</div></div>
+    <div class="card"><div class="num n-orange" id="c-risk">–</div><div class="lbl">可能延迟（风险）</div></div>
+    <div class="card"><div class="num n-blue" id="c-wl">–</div><div class="lbl">总工作量</div><div class="sub">负载系数 <span id="c-ratio">–</span></div></div>
+  </div>
+
+  <div class="row2">
+    <div class="panel">
+      <h2>任务结果状态分布</h2>
+      <div class="psbar" id="psbar"></div>
+      <div class="legend" id="pslegend"></div>
+    </div>
+    <div class="panel">
+      <h2>客户项目分布（Top 8）</h2>
+      <div id="projlist"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>排期甘特图（2026-08-03 ~ 08-16，按工作日/任务起止）</h2>
+    <div class="gantt"><div class="gantt-inner" id="gantt"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>任务明细（35 条）</h2>
+    <div class="filters">
+      <input id="q" type="text" placeholder="搜索 任务号 / 摘要 / 产品 / 客户项目…">
+      <select id="fstatus">
+        <option value="">全部状态</option>
+        <option value="finished">已完成</option>
+        <option value="delayedFinished">延迟完成</option>
+        <option value="delayedUnfinished">延迟未完成</option>
+        <option value="probablyDelayed">可能延迟</option>
+      </select>
+      <select id="ftype">
+        <option value="">全部类型</option>
+        <option value="test">测试</option>
+        <option value="developInvest">研发投入</option>
+        <option value="autoTestInvest">自动化投入</option>
+        <option value="productionInvest">生产投入</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tbl">
+        <thead><tr>
+          <th>任务号</th><th>摘要</th><th>类型</th><th>Jira 状态</th><th>结果状态</th>
+          <th>进度</th><th>工作量</th><th>开始</th><th>截止</th><th>产品</th><th>客户项目</th><th>提单人</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">由 Selene 人力排期数据自动生成 · 仅供排期查看，最终以 Jira 实际状态为准</div>
+</div>
+
+<script>
+const D = {"total": 35, "done_n": 18, "unfinished": 17, "delayed_n": 16, "risk_n": 7, "total_wl": 137.5, "ratio": 1.1, "cap": 80.0, "day_labels": ["08-03", "08-04", "08-05", "08-06", "08-07", "08-08", "08-09", "08-10", "08-11", "08-12", "08-13", "08-14", "08-15", "08-16"], "weekend": [false, false, false, false, false, true, true, false, false, false, false, false, true, true], "day_wl": [15.7, 11.2, 15.6, 11.4, 11.4, 4.9, 4.9, 7.9, 15.5, 11.5, 7.5, 14.7, 2.7, 2.7], "max_wl": 15.7, "pstat": {"finished": 12, "probablyDelayed": 7, "delayedUnfinished": 10, "delayedFinished": 6}, "proj_top": [["MASK*******01", 10], ["马来西亚全家_POS_项目(202511-203011)", 4], ["内部项目_产研中心_上海研发二部(202401-202412)", 3], ["广西美加美新零售_POS_美加美到家小程序合同20260615(202606-202708)", 3], ["山东烟台振华_POS_年度服务项目(202507-202706)", 2], ["安徽邻几便利_POS项目(201809-202608)", 2], ["郑州诚信志远_POS_年度服务项目(202601-202601)", 2], ["马来西亚大西药行_POS_项目(202511-202611)", 1]], "max_proj": 10, "tasks": [{"key": "MASK01-164", "summary": "MASK*******01", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 0, "kickoff": "08-03", "due": "08-03", "delayed": false, "done": true, "product": "h6-海鼎多业态商业自动化管理软件", "proj": "MASK*******01", "starter": "杨赛", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-30", "summary": "MASK*******01", "type": "test", "status": "测试中", "pstatus": "probablyDelayed", "progress": 60, "workload": 8.0, "kickoff": "08-03", "due": "08-16", "delayed": false, "done": false, "product": "h6-海鼎多业态商业自动化管理软件", "proj": "MASK*******01", "starter": "杨赛", "g_start": 0, "g_len": 14, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-4023", "summary": "MASK*******01", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 16.0, "kickoff": "08-03", "due": "08-10", "delayed": false, "done": true, "product": "jyzs-经营助手", "proj": "MASK*******01", "starter": "潘威", "g_start": 0, "g_len": 8, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-4745", "summary": "MASK*******01", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 8.0, "kickoff": "08-03", "due": "08-07", "delayed": false, "done": true, "product": "jyzs-经营助手", "proj": "MASK*******01", "starter": "郑綮燎", "g_start": 0, "g_len": 5, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5327", "summary": "MASK*******01", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 2.0, "kickoff": "08-03", "due": "08-03", "delayed": false, "done": true, "product": "jyzs-经营助手", "proj": "MASK*******01", "starter": "郑綮燎", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5353", "summary": "MASK*******01", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 6.0, "kickoff": "08-03", "due": "08-03", "delayed": false, "done": true, "product": "sop-门店运营平台", "proj": "MASK*******01", "starter": "杨海校", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5381", "summary": "MASK*******01", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 0, "kickoff": "08-07", "due": "07-29", "delayed": true, "done": false, "product": "sas-销售中台", "proj": "MASK*******01", "starter": "杨海校", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13806", "summary": "【门店运营】市调任务查询分类支持按商品筛选", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 0, "kickoff": "08-03", "due": "08-03", "delayed": true, "done": true, "product": "sop-门店运营平台", "proj": "山东烟台振华_POS_年度服务项目(202507-202706)", "starter": "苗圃", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SOP-13671", "summary": "【海鼎零售App】【混开版本】【督导助手】标准版本.国际化性能测试", "type": "test", "status": "开始", "pstatus": "delayedUnfinished", "progress": 0, "workload": 8.0, "kickoff": "08-03", "due": "08-13", "delayed": true, "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "徐妍琪", "g_start": 0, "g_len": 11, "overflow_l": false, "overflow_r": false}, {"key": "SOP-13755", "summary": "【门店助手】市调任务查询分类支持按商品筛选-前端", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 1.0, "kickoff": "08-03", "due": "08-03", "delayed": true, "done": true, "product": "sop-门店运营平台", "proj": "山东烟台振华_POS_年度服务项目(202507-202706)", "starter": "黄龙飞", "g_start": 0, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "TM-42958", "summary": "研发投入_202608_刘莹", "type": "developInvest", "status": "已解决", "pstatus": "finished", "progress": 100, "workload": 4.5, "kickoff": "08-03", "due": "08-16", "delayed": false, "done": true, "product": "unknown-未知", "proj": "内部项目_产研中心_上海研发二部(202401-202412)", "starter": "杨丽娟", "g_start": 0, "g_len": 14, "overflow_l": false, "overflow_r": false}, {"key": "TM-42959", "summary": "自动化投入_202608_刘莹", "type": "autoTestInvest", "status": "已解决", "pstatus": "finished", "progress": 100, "workload": 2.0, "kickoff": "08-03", "due": "08-16", "delayed": false, "done": true, "product": "unknown-未知", "proj": "内部项目_产研中心_上海研发二部(202401-202412)", "starter": "杨丽娟", "g_start": 0, "g_len": 14, "overflow_l": false, "overflow_r": false}, {"key": "TM-42960", "summary": "生产投入（生产投入）_202608_刘莹", "type": "productionInvest", "status": "已解决", "pstatus": "finished", "progress": 100, "workload": 5.0, "kickoff": "08-03", "due": "08-16", "delayed": false, "done": true, "product": "unknown-未知", "proj": "内部项目_产研中心_上海研发二部(202401-202412)", "starter": "杨丽娟", "g_start": 0, "g_len": 14, "overflow_l": false, "overflow_r": false}, {"key": "ZNBH-39", "summary": "【智能补货】BCG上传文档支持订单分组", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 2.0, "kickoff": "08-03", "due": "08-04", "delayed": false, "done": true, "product": "bh-智能补货", "proj": "马来西亚大西药行_POS_项目(202511-202611)", "starter": "王忆新", "g_start": 0, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5017", "summary": "MASK*******01", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 1.0, "kickoff": "08-04", "due": "08-04", "delayed": true, "done": false, "product": "jyzs-经营助手", "proj": "MASK*******01", "starter": "冯俊朋", "g_start": 1, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13801", "summary": "邻几便利_云小智刷脸支付重算促销满足限量需求", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 7.0, "kickoff": "08-04", "due": "08-05", "delayed": true, "done": true, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校", "g_start": 1, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "APPLYDJ-1746", "summary": "【到家小程序】小程序订单支持顾客在线申请开票-p1", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 10.0, "kickoff": "08-05", "due": "08-07", "delayed": false, "done": true, "product": "sy-dj-海鼎到家", "proj": "广西美加美新零售_POS_美加美到家小程序合同20260615(202606-202708)", "starter": "施凯雷", "g_start": 2, "g_len": 3, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13455", "summary": "ERS电子小票接收std回调开票结果", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 3.0, "kickoff": "08-05", "due": "08-05", "delayed": true, "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零食很能嗨个性化开发(202602-202702)", "starter": "杨海校", "g_start": 2, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "HEPH-8195", "summary": "【美加美】小程序订单支持顾客在线申请开票（不对接发票系统模式）【app-server】发票抬头", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 0, "kickoff": "08-06", "due": "08-07", "delayed": false, "done": true, "product": "zl-appserver-战略到家APP中台服务", "proj": "广西美加美新零售_POS_美加美到家小程序合同20260615(202606-202708)", "starter": "吴广", "g_start": 3, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "JYZS-1068", "summary": "【经营助手】恰货铺子经营助手查看券核销数据", "type": "test", "status": "关闭", "pstatus": "finished", "progress": 100, "workload": 4.0, "kickoff": "08-06", "due": "08-10", "delayed": false, "done": true, "product": "jyzs-经营助手", "proj": "恰货铺子_POS_项目(202603-202907)", "starter": "郑綮燎", "g_start": 3, "g_len": 5, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13779", "summary": "【美加美】小程序订单支持顾客在线申请开票-C端接口", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 3.0, "kickoff": "08-06", "due": "08-07", "delayed": true, "done": true, "product": "sy-dj-海鼎到家", "proj": "广西美加美新零售_POS_美加美到家小程序合同20260615(202606-202708)", "starter": "苗圃", "g_start": 3, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "SOP-13790", "summary": "【督导助手】国际化模块--表头数据来源统一", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 0, "kickoff": "08-06", "due": "08-06", "delayed": true, "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "秦建飞", "g_start": 3, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "DD-2397", "summary": "【诚信志远】添加销售品模块相关中台加工", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 0, "kickoff": "08-07", "due": "08-07", "delayed": true, "done": false, "product": "jyzs-经营助手", "proj": "郑州诚信志远_POS_年度服务项目(202601-202601)", "starter": "吴方浩", "g_start": 4, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13865", "summary": "百旺电子发票：queryOrder 携带 baiwangNo 时清理历史重开单据", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 0, "kickoff": "08-08", "due": "08-05", "delayed": true, "done": true, "product": "sas-销售中台", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "杨海校", "g_start": 5, "g_len": -2, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5553", "summary": "MASK*******01", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 3.0, "kickoff": "08-10", "due": "08-10", "delayed": true, "done": false, "product": "sas-销售中台", "proj": "MASK*******01", "starter": "杨海校", "g_start": 7, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "MASK01-5689", "summary": "MASK*******01", "type": "test", "status": "开始", "pstatus": "delayedUnfinished", "progress": 0, "workload": 0, "kickoff": "08-11", "due": "08-11", "delayed": true, "done": false, "product": "cpos-CPOS", "proj": "MASK*******01", "starter": "刘莹", "g_start": 8, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13725", "summary": "名创国际.试点美国增加Tax Holiday特殊免税计税", "type": "test", "status": "关闭", "pstatus": "delayedFinished", "progress": 100, "workload": 8.0, "kickoff": "08-11", "due": "08-11", "delayed": true, "done": true, "product": "sas-销售中台", "proj": "名创优品(国际)_POS年度服务项目(202601-202612)", "starter": "杨海校", "g_start": 8, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13755", "summary": "【唐久】美团到综批量授权", "type": "test", "status": "开发完成", "pstatus": "delayedUnfinished", "progress": 0, "workload": 4.0, "kickoff": "08-11", "due": "08-11", "delayed": true, "done": false, "product": "sas-销售中台", "proj": "内部项目(202401-202412)", "starter": "杨海校", "g_start": 8, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "type": "test", "status": "开始", "pstatus": "probablyDelayed", "progress": 0, "workload": 8.0, "kickoff": "08-11", "due": "08-16", "delayed": false, "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪", "g_start": 8, "g_len": 6, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13517", "summary": "【马来全家】KDS一期需求", "type": "test", "status": "测试中", "pstatus": "delayedUnfinished", "progress": 70, "workload": 8.0, "kickoff": "08-12", "due": "08-12", "delayed": true, "done": false, "product": "sop-qcy-轻餐饮运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃", "g_start": 9, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13762", "summary": "门店运营平台巡检模块优化", "type": "test", "status": "测试中", "pstatus": "probablyDelayed", "progress": 0, "workload": 0, "kickoff": "08-13", "due": "08-14", "delayed": false, "done": false, "product": "sop-门店运营平台", "proj": "桂林市力源连锁超市_POS_年度服务项目(202407-202506)", "starter": "张家浩", "g_start": 10, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13850", "summary": "【马来全家】KDS一期需求-套餐", "type": "test", "status": "开发完成", "pstatus": "probablyDelayed", "progress": 0, "workload": 8.0, "kickoff": "08-13", "due": "08-14", "delayed": false, "done": false, "product": "sop-qcy-轻餐饮运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃", "g_start": 10, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "SOP-13753", "summary": "【督导助手】巡检模块优化", "type": "test", "status": "开发中", "pstatus": "probablyDelayed", "progress": 0, "workload": 0, "kickoff": "08-13", "due": "08-14", "delayed": false, "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "黄龙飞", "g_start": 10, "g_len": 2, "overflow_l": false, "overflow_r": false}, {"key": "JYZS-1086", "summary": "【经营助手】诚信志远增加销售品模块", "type": "test", "status": "测试中", "pstatus": "probablyDelayed", "progress": 0, "workload": 8.0, "kickoff": "08-14", "due": "08-14", "delayed": false, "done": false, "product": "jyzs-经营助手", "proj": "郑州诚信志远_POS_年度服务项目(202601-202601)", "starter": "郑綮燎", "g_start": 11, "g_len": 1, "overflow_l": false, "overflow_r": false}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "type": "test", "status": "开始", "pstatus": "probablyDelayed", "progress": 0, "workload": 0, "kickoff": "08-14", "due": "08-14", "delayed": false, "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校", "g_start": 11, "g_len": 1, "overflow_l": false, "overflow_r": false}], "gantt": [{"key": "MASK01-164", "label": "MASK*******01", "left": 0, "len": 1, "cls": "bar-done", "tooltip": "MASK01-164 | MASK*******01 | 状态:关闭 | 进度:100% | 工作量:0 | 08-03~08-03 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-30", "label": "MASK*******01", "left": 0, "len": 14, "cls": "bar-risk", "tooltip": "MASK01-30 | MASK*******01 | 状态:测试中 | 进度:60% | 工作量:8.0 | 08-03~08-16 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 60}, {"key": "MASK01-4023", "label": "MASK*******01", "left": 0, "len": 8, "cls": "bar-done", "tooltip": "MASK01-4023 | MASK*******01 | 状态:关闭 | 进度:100% | 工作量:16.0 | 08-03~08-10 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-4745", "label": "MASK*******01", "left": 0, "len": 5, "cls": "bar-done", "tooltip": "MASK01-4745 | MASK*******01 | 状态:关闭 | 进度:100% | 工作量:8.0 | 08-03~08-07 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-5327", "label": "MASK*******01", "left": 0, "len": 1, "cls": "bar-done", "tooltip": "MASK01-5327 | MASK*******01 | 状态:关闭 | 进度:100% | 工作量:2.0 | 08-03~08-03 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-5353", "label": "MASK*******01", "left": 0, "len": 1, "cls": "bar-done", "tooltip": "MASK01-5353 | MASK*******01 | 状态:关闭 | 进度:100% | 工作量:6.0 | 08-03~08-03 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-5381", "label": "MASK*******01", "left": 0, "len": 1, "cls": "bar-delayed", "tooltip": "MASK01-5381 | MASK*******01 | 状态:开发完成 | 进度:0% | 工作量:0 | 08-07~07-29 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13806", "label": "【门店运营】市调任务查询分类支持按商品筛选", "left": 0, "len": 1, "cls": "bar-done-delayed", "tooltip": "SAS-13806 | 【门店运营】市调任务查询分类支持按商品筛选 | 状态:关闭 | 进度:100% | 工作量:0 | 08-03~08-03 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "SOP-13671", "label": "【海鼎零售App】【混开版本】【督导助手】标准版本.…", "left": 0, "len": 11, "cls": "bar-delayed", "tooltip": "SOP-13671 | 【海鼎零售App】【混开版本】【督导助手】标准版本.国际化性能测试 | 状态:开始 | 进度:0% | 工作量:8.0 | 08-03~08-13 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SOP-13755", "label": "【门店助手】市调任务查询分类支持按商品筛选-前端", "left": 0, "len": 1, "cls": "bar-done-delayed", "tooltip": "SOP-13755 | 【门店助手】市调任务查询分类支持按商品筛选-前端 | 状态:关闭 | 进度:100% | 工作量:1.0 | 08-03~08-03 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "TM-42958", "label": "研发投入_202608_刘莹", "left": 0, "len": 14, "cls": "bar-done", "tooltip": "TM-42958 | 研发投入_202608_刘莹 | 状态:已解决 | 进度:100% | 工作量:4.5 | 08-03~08-16 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "TM-42959", "label": "自动化投入_202608_刘莹", "left": 0, "len": 14, "cls": "bar-done", "tooltip": "TM-42959 | 自动化投入_202608_刘莹 | 状态:已解决 | 进度:100% | 工作量:2.0 | 08-03~08-16 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "TM-42960", "label": "生产投入（生产投入）_202608_刘莹", "left": 0, "len": 14, "cls": "bar-done", "tooltip": "TM-42960 | 生产投入（生产投入）_202608_刘莹 | 状态:已解决 | 进度:100% | 工作量:5.0 | 08-03~08-16 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "ZNBH-39", "label": "【智能补货】BCG上传文档支持订单分组", "left": 0, "len": 2, "cls": "bar-done", "tooltip": "ZNBH-39 | 【智能补货】BCG上传文档支持订单分组 | 状态:关闭 | 进度:100% | 工作量:2.0 | 08-03~08-04 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-5017", "label": "MASK*******01", "left": 1, "len": 1, "cls": "bar-delayed", "tooltip": "MASK01-5017 | MASK*******01 | 状态:开发完成 | 进度:0% | 工作量:1.0 | 08-04~08-04 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13801", "label": "邻几便利_云小智刷脸支付重算促销满足限量需求", "left": 1, "len": 2, "cls": "bar-done-delayed", "tooltip": "SAS-13801 | 邻几便利_云小智刷脸支付重算促销满足限量需求 | 状态:关闭 | 进度:100% | 工作量:7.0 | 08-04~08-05 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "APPLYDJ-1746", "label": "【到家小程序】小程序订单支持顾客在线申请开票-p1", "left": 2, "len": 3, "cls": "bar-done", "tooltip": "APPLYDJ-1746 | 【到家小程序】小程序订单支持顾客在线申请开票-p1 | 状态:关闭 | 进度:100% | 工作量:10.0 | 08-05~08-07 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "SAS-13455", "label": "ERS电子小票接收std回调开票结果", "left": 2, "len": 1, "cls": "bar-delayed", "tooltip": "SAS-13455 | ERS电子小票接收std回调开票结果 | 状态:开发完成 | 进度:0% | 工作量:3.0 | 08-05~08-05 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "HEPH-8195", "label": "【美加美】小程序订单支持顾客在线申请开票（不对接发票…", "left": 3, "len": 2, "cls": "bar-done", "tooltip": "HEPH-8195 | 【美加美】小程序订单支持顾客在线申请开票（不对接发票系统模式）【app-server】发票抬头 | 状态:关闭 | 进度:100% | 工作量:0 | 08-06~08-07 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "JYZS-1068", "label": "【经营助手】恰货铺子经营助手查看券核销数据", "left": 3, "len": 5, "cls": "bar-done", "tooltip": "JYZS-1068 | 【经营助手】恰货铺子经营助手查看券核销数据 | 状态:关闭 | 进度:100% | 工作量:4.0 | 08-06~08-10 | 结果:finished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "SAS-13779", "label": "【美加美】小程序订单支持顾客在线申请开票-C端接口", "left": 3, "len": 2, "cls": "bar-done-delayed", "tooltip": "SAS-13779 | 【美加美】小程序订单支持顾客在线申请开票-C端接口 | 状态:关闭 | 进度:100% | 工作量:3.0 | 08-06~08-07 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "SOP-13790", "label": "【督导助手】国际化模块--表头数据来源统一", "left": 3, "len": 1, "cls": "bar-delayed", "tooltip": "SOP-13790 | 【督导助手】国际化模块--表头数据来源统一 | 状态:开发完成 | 进度:0% | 工作量:0 | 08-06~08-06 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "DD-2397", "label": "【诚信志远】添加销售品模块相关中台加工", "left": 4, "len": 1, "cls": "bar-delayed", "tooltip": "DD-2397 | 【诚信志远】添加销售品模块相关中台加工 | 状态:开发完成 | 进度:0% | 工作量:0 | 08-07~08-07 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13865", "label": "百旺电子发票：queryOrder 携带 baiwa…", "left": 5, "len": -2, "cls": "bar-done-delayed", "tooltip": "SAS-13865 | 百旺电子发票：queryOrder 携带 baiwangNo 时清理历史重开单据 | 状态:关闭 | 进度:100% | 工作量:0 | 08-08~08-05 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "MASK01-5553", "label": "MASK*******01", "left": 7, "len": 1, "cls": "bar-delayed", "tooltip": "MASK01-5553 | MASK*******01 | 状态:开发完成 | 进度:0% | 工作量:3.0 | 08-10~08-10 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "MASK01-5689", "label": "MASK*******01", "left": 8, "len": 1, "cls": "bar-delayed", "tooltip": "MASK01-5689 | MASK*******01 | 状态:开始 | 进度:0% | 工作量:0 | 08-11~08-11 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13725", "label": "名创国际.试点美国增加Tax Holiday特殊免税…", "left": 8, "len": 1, "cls": "bar-done-delayed", "tooltip": "SAS-13725 | 名创国际.试点美国增加Tax Holiday特殊免税计税 | 状态:关闭 | 进度:100% | 工作量:8.0 | 08-11~08-11 | 结果:delayedFinished", "overflow_l": false, "overflow_r": false, "progress": 100}, {"key": "SAS-13755", "label": "【唐久】美团到综批量授权", "left": 8, "len": 1, "cls": "bar-delayed", "tooltip": "SAS-13755 | 【唐久】美团到综批量授权 | 状态:开发完成 | 进度:0% | 工作量:4.0 | 08-11~08-11 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SOP-13858", "label": "【海鼎零售App】【门店助手】标准版本.老客户切换混…", "left": 8, "len": 6, "cls": "bar-risk", "tooltip": "SOP-13858 | 【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比 | 状态:开始 | 进度:0% | 工作量:8.0 | 08-11~08-16 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13517", "label": "【马来全家】KDS一期需求", "left": 9, "len": 1, "cls": "bar-delayed", "tooltip": "SAS-13517 | 【马来全家】KDS一期需求 | 状态:测试中 | 进度:70% | 工作量:8.0 | 08-12~08-12 | 结果:delayedUnfinished", "overflow_l": false, "overflow_r": false, "progress": 70}, {"key": "SAS-13762", "label": "门店运营平台巡检模块优化", "left": 10, "len": 2, "cls": "bar-risk", "tooltip": "SAS-13762 | 门店运营平台巡检模块优化 | 状态:测试中 | 进度:0% | 工作量:0 | 08-13~08-14 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13850", "label": "【马来全家】KDS一期需求-套餐", "left": 10, "len": 2, "cls": "bar-risk", "tooltip": "SAS-13850 | 【马来全家】KDS一期需求-套餐 | 状态:开发完成 | 进度:0% | 工作量:8.0 | 08-13~08-14 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SOP-13753", "label": "【督导助手】巡检模块优化", "left": 10, "len": 2, "cls": "bar-risk", "tooltip": "SOP-13753 | 【督导助手】巡检模块优化 | 状态:开发中 | 进度:0% | 工作量:0 | 08-13~08-14 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "JYZS-1086", "label": "【经营助手】诚信志远增加销售品模块", "left": 11, "len": 1, "cls": "bar-risk", "tooltip": "JYZS-1086 | 【经营助手】诚信志远增加销售品模块 | 状态:测试中 | 进度:0% | 工作量:8.0 | 08-14~08-14 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}, {"key": "SAS-13898", "label": "[回归验证] 邻几便利_云小智手动输入会员后付款时价…", "left": 11, "len": 1, "cls": "bar-risk", "tooltip": "SAS-13898 | [回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后） | 状态:开始 | 进度:0% | 工作量:0 | 08-14~08-14 | 结果:probablyDelayed", "overflow_l": false, "overflow_r": false, "progress": 0}]};
+const PS_COLOR = {"finished":"#10b981","delayedFinished":"#34d399","delayedUnfinished":"#ef4444","probablyDelayed":"#f59e0b"};
+const PS_ORDER = ["finished","delayedFinished","delayedUnfinished","probablyDelayed"];
+const PS_CN = {"finished":"已完成","delayedFinished":"延迟完成","delayedUnfinished":"延迟未完成","probablyDelayed":"可能延迟"};
+
+// 统计卡
+document.getElementById('c-total').textContent = D.total;
+document.getElementById('c-done').textContent = D.done_n;
+document.getElementById('c-run').textContent = D.unfinished;
+document.getElementById('c-delayed').textContent = D.delayed_n;
+document.getElementById('c-risk').textContent = D.risk_n;
+document.getElementById('c-wl').textContent = D.total_wl;
+document.getElementById('c-ratio').textContent = D.ratio ? (D.ratio + 'x') : '–';
+
+// 状态分布
+(function(){
+  const total = D.total || 1;
+  const bar = document.getElementById('psbar');
+  const leg = document.getElementById('pslegend');
+  let html = '';
+  PS_ORDER.forEach(k => {
+    const n = D.pstat[k] || 0;
+    const pct = Math.round(n / total * 100);
+    html += `<div style="width:${pct}%;background:${PS_COLOR[k]};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700;min-width:${n?28:0}px">${n?n:''}</div>`;
+    leg.innerHTML += `<span><i style="background:${PS_COLOR[k]}"></i>${PS_CN[k]} <b>${n}</b></span>`;
+  });
+  bar.innerHTML = html;
+})();
+
+// 项目分布
+(function(){
+  const el = document.getElementById('projlist');
+  let html = '';
+  D.proj_top.forEach(p => {
+    const pct = Math.round(p[1] / D.max_proj * 100);
+    html += `<div class="proj-item"><span class="proj-name" title="${p[0]}">${p[0]}</span><div class="proj-bar"><div class="proj-fill" style="width:${pct}%"></div></div><span class="proj-num">${p[1]}</span></div>`;
+  });
+  el.innerHTML = html;
+})();
+
+// 甘特图
+(function(){
+  const g = document.getElementById('gantt');
+  const N = D.day_labels.length;
+  // 表头
+  let head = `<div class="gantt-head"><div class="gantt-title">任务</div><div class="gantt-axis">`;
+  D.day_labels.forEach((d, i) => {
+    head += `<div class="gantt-day${D.weekend[i]?' off':''}">${d}</div>`;
+  });
+  head += `</div></div>`;
+  g.innerHTML = head;
+  // 行
+  D.gantt.forEach(t => {
+    const col = t.left;
+    const span = Math.min(t.len, N - col);
+    const leftPct = col / N * 100;
+    const widthPct = Math.max(span, 0.5) / N * 100;
+    let cells = '';
+    for (let i = 0; i < N; i++) cells += `<div class="gantt-cell"></div>`;
+    const bar = `<div class="gantt-bar ${t.cls}" style="left:${leftPct}%;width:${widthPct}%" title="${t.tooltip}">${t.key}</div>` +
+      (t.overflow_l ? `<span class="flag" style="left:${leftPct}%">◀提前</span>` : '') +
+      (t.overflow_r ? `<span class="flag" style="left:${leftPct+widthPct}%">超期▶</span>` : '');
+    const row = `<div class="gantt-row"><div class="gantt-label"><span class="k">${t.key}</span><span class="s">${t.label}</span></div><div class="gantt-track">${cells}${bar}</div></div>`;
+    g.innerHTML += row;
+  });
+})();
+
+// 表格
+const STATUS_TAG = {
+  'finished': '<span class="tag tag-fin">已完成</span>',
+  'delayedFinished': '<span class="tag tag-fin-d">延迟完成</span>',
+  'delayedUnfinished': '<span class="tag tag-del">延迟未完成</span>',
+  'probablyDelayed': '<span class="tag tag-risk">可能延迟</span>',
+};
+const TYPE_CN = {'test':'测试','developInvest':'研发投入','autoTestInvest':'自动化投入','productionInvest':'生产投入'};
+
+function render(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const fs = document.getElementById('fstatus').value;
+  const ft = document.getElementById('ftype').value;
+  const rows = D.tasks.filter(t => {
+    if (fs && t.pstatus !== fs) return false;
+    if (ft && t.type !== ft) return false;
+    if (q) {
+      const hay = (t.key + ' ' + t.summary + ' ' + (t.product||'') + ' ' + (t.proj||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = rows.map(t => `<tr>
+    <td class="key">${t.key}</td>
+    <td class="summary" title="${t.summary}">${t.summary}</td>
+    <td>${TYPE_CN[t.type]||t.type}</td>
+    <td>${t.status}</td>
+    <td>${STATUS_TAG[t.pstatus]||t.pstatus}</td>
+    <td class="mono">${t.progress}%</td>
+    <td class="mono">${t.workload}</td>
+    <td class="mono">${t.kickoff}</td>
+    <td class="mono">${t.due}</td>
+    <td title="${t.product}">${t.product}</td>
+    <td title="${t.proj}">${(t.proj||'').slice(0,30)}${(t.proj||'').length>30?'…':''}</td>
+    <td>${t.starter||''}</td>
+  </tr>`).join('');
+}
+document.getElementById('q').addEventListener('input', render);
+document.getElementById('fstatus').addEventListener('change', render);
+document.getElementById('ftype').addEventListener('change', render);
+render();
+</script>
+</body>
+</html>
