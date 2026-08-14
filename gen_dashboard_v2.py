@@ -288,10 +288,11 @@ tbody tr:last-child td{border-bottom:none}
 .tip .em{font-size:15px}
 .banner-text{flex:1;min-width:0}
 .banner-fetch{margin-left:auto;white-space:nowrap}
+.tip.banner-fetch{flex-wrap:wrap;gap:4px 8px}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
-.overload-tip{display:none;align-items:center;gap:6px;font-size:12px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:999px;padding:4px 12px;margin-left:12px}
+.overload-tip{display:none;align-items:center;gap:4px;font-size:12px;color:var(--warn-txt);margin-left:12px}
 .overload-tip.show{display:inline-flex}
 .overload-tip .em{font-size:13px}
 .overload-tip b{font-weight:700;color:var(--warn-txt)}
@@ -356,8 +357,8 @@ tbody tr:last-child td{border-bottom:none}
   .filters{flex-direction:column;align-items:stretch;gap:12px;padding:12px}
   .filters input{width:100%}
   .chk-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
-  .chk{padding:8px 10px;justify-content:flex-start;text-align:left;font-size:11.5px;flex-direction:row;gap:6px;min-height:38px;width:100%;min-width:0;overflow:hidden}
-  .chk span{white-space:nowrap;line-height:1.25;writing-mode:horizontal-tb;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+  .chk{padding:8px 10px;justify-content:flex-start;text-align:left;font-size:12px;flex-direction:row;gap:6px;min-height:38px;width:100%;min-width:0;overflow:hidden}
+  .chk span{white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;min-width:4em;font-weight:500}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
@@ -367,8 +368,8 @@ tbody tr:last-child td{border-bottom:none}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
   .m-card .key{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
   .m-card .name{word-break:break-word}
-  .m-card .meta{gap:6px}
-  .m-card .meta span{white-space:normal;word-break:break-word;overflow-wrap:anywhere;justify-content:flex-start;gap:6px}
+  .m-card .meta{display:none}
+  .mobile-list .m-card .prog-wrap{margin-bottom:0}
   .pager{justify-content:space-between}
   .foot{font-size:11px;margin-top:14px}
 }
@@ -480,6 +481,7 @@ const D = __DATA__;
 // 移动端检测：用于精简头部头像与产品耗时卡
 const IS_MOBILE = window.matchMedia('(max-width:640px)').matches || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
 if(IS_MOBILE) document.body.classList.add('mobile');
+const JIRA_TARGET = IS_MOBILE ? '_self' : '_blank';
 
 const TAGLINES=[
   "☕ 排期已就绪，今天也要元气满满～",
@@ -568,6 +570,7 @@ function progClass(s){
   return ['p-start','pf-start'];
 }
 function jiraUrl(key){return 'http://jira6.app.hd123.cn/jira/browse/'+encodeURIComponent(key);}
+function devName(t){return (t.prev && t.prev.employeeName) || t.starterName || t.starter || '—';}
 
 function getFiltered(){
   const q=document.getElementById('q').value.trim().toLowerCase();
@@ -603,7 +606,7 @@ function renderTbody(rows, pageRows, isLastPage){
       '</div>';
     return '<tr data-key="'+esc(t.key)+'">'+
       '<td class="task-cell">'+
-        '<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
+        '<a class="task-key" href="'+jiraUrl(t.key)+'" target="'+JIRA_TARGET+'" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
         '<div class="task-name" title="'+esc(t.summary)+'">'+esc(t.summary)+'</div>'+
       '</td>'+
       '<td>'+(STATUS_TAG[t.status]||esc(t.status))+'</td>'+
@@ -612,7 +615,7 @@ function renderTbody(rows, pageRows, isLastPage){
       '<td class="nowrap">'+esc(t.kickoff.slice(5))+'</td>'+
       '<td title="'+esc(t.product)+'"><span class="cell">'+esc(t.product)+'</span></td>'+
       '<td title="'+esc(t.proj)+'"><span class="cell">'+esc(t.proj)+'</span></td>'+
-      '<td class="nowrap">'+esc(t.starter||'')+'</td>'+
+      '<td class="nowrap">'+esc(devName(t))+'</td>'+
       '</tr>';
   }).join('');
   if(isLastPage && pageRows.length>0){
@@ -630,7 +633,7 @@ function renderMobile(rows, pageRows, isLastPage){
     const [pb,pf]=progClass(t.status);
     return '<div class="m-card" data-key="'+esc(t.key)+'">'+
       '<div class="top">'+
-        '<a class="key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
+        '<a class="key" href="'+jiraUrl(t.key)+'" target="'+JIRA_TARGET+'" rel="noopener noreferrer">'+esc(t.key)+'</a>'+
         statusPill(t.status)+
       '</div>'+
       '<div class="name">'+esc(t.summary)+'</div>'+
@@ -646,7 +649,7 @@ function renderMobile(rows, pageRows, isLastPage){
         '<span><span class="lb">开始</span>'+esc(t.kickoff)+'</span>'+
         '<span><span class="lb">产品</span>'+esc(t.product||'—')+'</span>'+
         '<span><span class="lb">客户项目</span>'+esc(t.proj||'—')+'</span>'+
-        '<span><span class="lb">开发人</span>'+esc(t.starter||'—')+'</span>'+
+        '<span><span class="lb">开发人</span>'+esc(devName(t))+'</span>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -681,7 +684,7 @@ function render(){
   renderMobile(rows, pageRows, isLastPage);
 }
 
-/* 任务号已是真实 <a href target="_blank"> 链接，原生跳转，移动端/微信均可靠 */
+/* 任务号已是真实 <a href> 链接，原生跳转；移动端用 _self 避免微信拦截新标签页 */
 let toastTimer=null;
 function showToast(msg){
   const el=document.getElementById('toast');
@@ -730,7 +733,7 @@ const drawer=document.getElementById('drawer');
 function openDrawer(t){
   const [pb,pf]=progClass(t.status);
   const rows=[
-    ['任务号','<a class="task-key" href="'+jiraUrl(t.key)+'" target="_blank" rel="noopener noreferrer">'+esc(t.key)+'</a>'],
+    ['任务号','<a class="task-key" href="'+jiraUrl(t.key)+'" target="'+JIRA_TARGET+'" rel="noopener noreferrer">'+esc(t.key)+'</a>'],
     ['任务名称',esc(t.summary)],
     ['Jira 状态',(STATUS_TAG[t.status]||esc(t.status))],
     ['进度','<div class="prog" style="margin-top:2px"><span class="prog-pct">'+t.progress+'%</span><div class="prog-bar '+pb+'"><div class="prog-fill '+pf+'" style="width:'+t.progress+'%"></div></div></div>'],
@@ -739,7 +742,7 @@ function openDrawer(t){
     ['截止日期',esc(t.due)],
     ['产品',esc(t.product)],
     ['客户项目',esc(t.proj)],
-    ['开发人',esc(t.starter||'—')],
+    ['开发人',esc(devName(t))],
   ];
   document.getElementById('drawer-body').innerHTML=
     '<div class="dl">'+rows.map(r=>'<div class="row"><div class="k">'+r[0]+'</div><div class="v">'+r[1]+'</div></div>').join('<hr>')+'</div>';
