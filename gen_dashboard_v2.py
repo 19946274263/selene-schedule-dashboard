@@ -286,7 +286,7 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
-.banner-text{flex:1;min-width:0}
+.banner-text{flex:1;min-width:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
 .banner-fetch{margin-left:auto;white-space:nowrap}
 .tip.banner-fetch{flex-wrap:wrap;gap:4px 8px}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
@@ -358,7 +358,8 @@ tbody tr:last-child td{border-bottom:none}
   .filters input{width:100%}
   .chk-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
   .chk{padding:8px 10px;justify-content:flex-start;text-align:left;font-size:12px;flex-direction:row;gap:6px;min-height:38px;width:100%;min-width:0;overflow:hidden}
-  .chk span{white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;min-width:4em;font-weight:500}
+  .chk input{flex-shrink:0}
+  .chk span{flex:1 1 auto;min-width:0;white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;text-align:left;font-weight:500}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
