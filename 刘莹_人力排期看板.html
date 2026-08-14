@@ -180,6 +180,8 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
+.banner-text{flex:1;min-width:0}
+.banner-fetch{margin-left:auto;white-space:nowrap}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
@@ -253,6 +255,7 @@ tbody tr:last-child td{border-bottom:none}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
+  .banner-fetch{margin-left:0;width:100%;text-align:right;flex-basis:100%;margin-top:2px}
   .tbl-wrap{display:none}
   .mobile-list{display:block}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
@@ -310,10 +313,13 @@ tbody tr:last-child td{border-bottom:none}
   <div class="panel">
     <div class="panel-head">
       <h2>任务明细</h2>
-      <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
+    </div>
+    <div class="tip banner-fetch">
+      <span class="em">🍵</span>
+      <span class="banner-text">排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span>
+      <span class="banner-fetch" id="banner-fetch"></span>
     </div>
     <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
-    <div class="window-info" id="win-info"></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
       <div class="chk-group" id="fstatus">
@@ -389,11 +395,12 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function fmtH(h){h=+h;return Number.isInteger(h)?String(h):String(h);}
 
 const TODAY=today0();
-const WIN_END=addDays(TODAY,7);
+const WIN_START=addDays(TODAY,-2);
+const WIN_END=addDays(TODAY,4);
 const winTasks=D.tasks.filter(t=>{
-  const k=parseISO(t.kickoff)||TODAY;
-  const e=parseISO(t.due)||TODAY;
-  return e>=TODAY && k<=WIN_END;
+  const k=parseISO(t.kickoff)||WIN_END;
+  const e=parseISO(t.due)||WIN_START;
+  return e>=WIN_START && k<=WIN_END;
 });
 
 function updateCards(){
@@ -425,16 +432,9 @@ function updateCards(){
 }
 
 document.getElementById('sprint').textContent=D.sprint;
-document.getElementById('gen-time').textContent='生成于 '+D.sprintBegin+' ~ '+D.sprintEnd;
+document.getElementById('gen-time').textContent='数据周期 '+fmt(WIN_START)+' ~ '+fmt(WIN_END);
 
-function renderWinInfo(){
-  const fetchHtml='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
-  document.getElementById('win-info').innerHTML=
-    '<span class="win-main">当前查看窗口：<b>'+fmt(TODAY)+' ~ '+fmt(WIN_END)+'</b>（今天起未来 7 天）'+
-    (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+'</span>'+
-    '<span class="win-fetch">'+fetchHtml+'</span>';
-}
-renderWinInfo();
+document.getElementById('banner-fetch').innerHTML='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
 updateCards();
 
 function badgeClass(s){return s==='开发中'?'tag-dev':(s==='开发完成'?'tag-wait':(s==='关闭'?'tag-done':(s==='已解决'?'tag-resolved':(s==='开始'?'tag-start':'tag-run'))));}
