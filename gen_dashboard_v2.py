@@ -180,9 +180,8 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .card-done{background:var(--c-done-bg)} .card-done .num,.card-done .lbl{color:var(--c-done-txt)}
 .card-run{background:var(--c-run-bg)} .card-run .num,.card-run .lbl{color:var(--c-run-txt)}
 .card-wait{background:var(--c-wait-bg)} .card-wait .num,.card-wait .lbl{color:var(--c-wait-txt)}
-.th-prod{position:relative;min-height:56px}
-.th-prod-label{position:absolute;left:12px;top:50%;transform:translateY(-50%);white-space:nowrap}
-.prod-champ-th{position:absolute;left:12px;top:calc(50% + 12px);font-size:11.5px;font-weight:500;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 24px)}
+.th-prod{white-space:nowrap}
+.prod-champ-th{font-size:11.5px;font-weight:500;color:var(--sub);margin-left:6px}
 
 .panel{background:#fff;border-radius:8px;padding:24px 28px;border:1px solid var(--line)}
 .panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -441,7 +440,7 @@ tbody tr:last-child td{border-bottom:none}
         </colgroup>
         <thead><tr>
           <th>任务</th><th>Jira 状态</th><th>进度</th>
-          <th>工作量</th><th>开始</th><th class="th-prod"><span class="th-prod-label">产品</span><div class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></div></th><th>客户项目</th><th>开发人</th>
+          <th>工作量</th><th>开始</th><th class="th-prod">产品<span class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></span></th><th>客户项目</th><th>开发人</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
