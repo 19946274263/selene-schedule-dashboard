@@ -65,7 +65,13 @@ prod_wl = {}
 for t in simplified:
     pr = t['product'].strip() or '未分类'
     prod_wl[pr] = prod_wl.get(pr, 0.0) + t['workload']
-prod_dist = sorted([{'product': p, 'hours': round(h, 1), 'short': (p.split('-')[0] if '-' in p else p[:4])} for p, h in prod_wl.items()], key=lambda x: -x['hours'])
+def short_name(p):
+    """产品简称：取最后一个纯 ASCII 段（即中文名前的具体产品码）。
+    例：sop-门店运营平台 -> sop；sy-dj-海鼎到家 -> dj"""
+    parts = p.split('-')
+    ascii_parts = [x for x in parts if x and not any('\u4e00' <= c <= '\u9fff' for c in x)]
+    return ascii_parts[-1] if ascii_parts else p[:4]
+prod_dist = sorted([{'product': p, 'hours': round(h, 1), 'short': short_name(p)} for p, h in prod_wl.items()], key=lambda x: -x['hours'])
 for item in prod_dist:
     item['pct'] = round(item['hours'] / total_workload * 100, 1) if total_workload else 0
 print("过滤后状态分布:", dict(Counter(t['status'] for t in simplified)))
@@ -270,6 +276,9 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
+/* 弱化版提示语（置于窗口信息上方，视觉更轻） */
+.tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
+.tip-soft .em{font-size:14px;opacity:.9}
 .overload-tip{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .overload-tip.show{display:flex}
 .overload-tip .em{font-size:15px}
@@ -283,13 +292,13 @@ tbody tr:last-child td{border-bottom:none}
 .pager .pg-info{font-variant-numeric:tabular-nums}
 
 /* 最后一条俏皮提示（表格内） */
-.end-tip td{border-bottom:none;background:transparent;padding:12px 0}
-.end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+.end-tip td{border-bottom:none;background:transparent;padding:10px 0}
+.end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12px;color:var(--sub);background:transparent;border:none;opacity:.85;padding:6px 0}
 .end-tip .em{font-size:15px}
 .m-end-tip{display:none}
 @media(max-width:640px){
-  .m-end-tip{display:block;margin-top:14px}
-  .m-end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+  .m-end-tip{display:block;margin-top:12px}
+  .m-end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12px;color:var(--sub);background:transparent;border:none;opacity:.85;padding:6px 0}
   .m-end-tip .em{font-size:15px}
 }
 
@@ -383,15 +392,15 @@ tbody tr:last-child td{border-bottom:none}
       <div class="num" id="c-total">–</div><div class="lbl">任务总数</div>
       <div class="ctip">🗓️ 未来 7 天排期全貌</div>
     </div>
-    <div class="card card-done" data-filter="关闭" title="状态为【关闭】的已完结任务">
+    <div class="card card-done" data-filter="关闭" title="已完成：状态为【关闭】的任务">
       <div class="num" id="c-done">–</div><div class="lbl">已完成</div>
       <div class="ctip">✅ 已收工，安心喝口茶</div>
     </div>
-    <div class="card card-run" data-filter="测试中" title="处于测试验收阶段的任务">
+    <div class="card card-run" data-filter="测试中" title="进行中：状态为【测试中】的任务">
       <div class="num" id="c-run">–</div><div class="lbl">进行中</div>
       <div class="ctip">🔥 测试中，盯紧验收</div>
     </div>
-    <div class="card card-wait" data-filter="开始|开发中|开发完成" title="待启动及开发阶段未验收任务">
+    <div class="card card-wait" data-filter="开始|开发中|开发完成" title="未开始：状态为【开始、开发中、开发完成】的任务">
       <div class="num" id="c-wait">–</div><div class="lbl">未开始</div>
       <div class="ctip">📋 还有这么多没干完，活太多啦～想插需求？挑张看不顺眼的单换掉它 😏</div>
     </div>
@@ -406,8 +415,8 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="panel">
     <h2>任务明细</h2>
+    <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
     <div class="window-info" id="win-info"></div>
-    <div class="tip"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
     <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
@@ -486,6 +495,7 @@ function addDays(d,n){const r=new Date(d);r.setDate(d.getDate()+n);return r;}
 function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function parseISO(s){if(!s)return null;const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;return new Date(+m[1],+m[2]-1,+m[3]);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fmtH(h){h=+h;return Number.isInteger(h)?String(h):String(h);}
 
 const TODAY=today0();
 const WIN_END=addDays(TODAY,7);
@@ -508,17 +518,17 @@ function updateCards(){
   const prodColors=['#C98A5E','#7FB2DA','#8AA877','#BBA37C','#A8A29C'];
   if(D.productDist && D.productDist.length){
     const top=D.productDist[0];
-    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+top.hours+'h</span>';
+    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+fmtH(top.hours)+'h</span>';
     document.getElementById('c-prod-bars').innerHTML=D.productDist.slice(0,4).map((p,i)=>
       '<div class="prod-seg" style="width:'+p.pct+'%;background:'+prodColors[i%prodColors.length]+'"></div>'
     ).join('');
     document.getElementById('c-prod-legend').innerHTML=D.productDist.slice(0,4).map((p,i)=>
-      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+p.hours+'h</span>'
+      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+fmtH(p.hours)+'h</span>'
     ).join('');
   }
 
   if(D.overload){
-    document.getElementById('total-workload').textContent=D.totalWorkload;
+    document.getElementById('total-workload').textContent=fmtH(D.totalWorkload);
     document.getElementById('overload-tip').classList.add('show');
   }
 }
@@ -527,18 +537,10 @@ document.getElementById('sprint').textContent=D.sprint;
 document.getElementById('gen-time').textContent='生成于 '+D.sprintBegin+' ~ '+D.sprintEnd;
 
 function renderWinInfo(){
-  let expHtml='';
-  if(D.tokenExp){
-    if(D.tokenExpired){
-      expHtml=' · <span style="color:#b04a2f;font-weight:600">⚠️ 数据 token 已过期，请到浏览器重新复制 token 后刷新</span>';
-    }else{
-      expHtml=' · 数据有效至 <b>'+esc(D.tokenExp)+'</b>（过期前请在浏览器复制新 token）';
-    }
-  }
   const fetchHtml='最近获取：<b>'+esc(D.lastFetch)+'</b>';
   document.getElementById('win-info').innerHTML=
     '<span class="win-main">当前查看窗口：<b>'+fmt(TODAY)+' ~ '+fmt(WIN_END)+'</b>（今天起未来 7 天）'+
-    (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+expHtml+'</span>'+
+    (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+'</span>'+
     '<span class="win-fetch">'+fetchHtml+'</span>';
 }
 renderWinInfo();
@@ -680,6 +682,9 @@ function confirmJira(key){
   pendingKey=key;
   confirmEl.classList.add('open');
 }
+// 暴露到 window：内联 onclick="confirmJira(...)" 运行在全局作用域，
+// 而本函数定义在 try 块内（块级作用域），不暴露会导致点击报「confirmJira is not defined」
+window.confirmJira = confirmJira;
 document.getElementById('confirm-yes').addEventListener('click',()=>{
   confirmEl.classList.remove('open');
   if(pendingKey)window.open(jiraUrl(pendingKey),'_blank');
@@ -779,11 +784,10 @@ render();
 
 } catch (err) {
   console.error(err);
-  document.body.innerHTML='<div style="max-width:480px;margin:60px auto;padding:30px;background:#fff;border:1px solid #E4E0DA;border-radius:12px;text-align:center;color:#7A756F;font-family:sans-serif;line-height:1.8">'+
-    '<div style="font-size:40px;margin-bottom:12px">🛠️</div>'+
-    '<h2 style="color:#3A3835;margin-bottom:10px">页面加载出了点小问题</h2>'+
-    '<p>错误信息：'+esc(err.message)+'</p>'+
-    '<p>建议刷新页面，或联系刘莹重新生成看板。</p>'+
+  document.body.innerHTML='<div style="max-width:480px;margin:80px auto;padding:36px;background:#fff;border:1px solid #E4E0DA;border-radius:12px;text-align:center;color:#7A756F;font-family:sans-serif;line-height:1.9">'+
+    '<div style="font-size:42px;margin-bottom:14px">☕</div>'+
+    '<h2 style="color:#3A3835;margin-bottom:12px;font-size:18px">看板未成功加载，请稍后再看~</h2>'+
+    '<p style="font-size:13px">可能是数据正在刷新或网络波动，稍后刷新一下就好。</p>'+
     '</div>';
 }
 </script>

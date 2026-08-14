@@ -173,6 +173,9 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
+/* 弱化版提示语（置于窗口信息上方，视觉更轻） */
+.tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
+.tip-soft .em{font-size:14px;opacity:.9}
 .overload-tip{display:none;align-items:center;gap:8px;font-size:12.5px;color:var(--warn-txt);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .overload-tip.show{display:flex}
 .overload-tip .em{font-size:15px}
@@ -186,13 +189,13 @@ tbody tr:last-child td{border-bottom:none}
 .pager .pg-info{font-variant-numeric:tabular-nums}
 
 /* 最后一条俏皮提示（表格内） */
-.end-tip td{border-bottom:none;background:transparent;padding:12px 0}
-.end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+.end-tip td{border-bottom:none;background:transparent;padding:10px 0}
+.end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12px;color:var(--sub);background:transparent;border:none;opacity:.85;padding:6px 0}
 .end-tip .em{font-size:15px}
 .m-end-tip{display:none}
 @media(max-width:640px){
-  .m-end-tip{display:block;margin-top:14px}
-  .m-end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12.5px;color:var(--sub);background:var(--filter-bg);border:1px dashed var(--line);border-radius:8px;padding:10px 14px}
+  .m-end-tip{display:block;margin-top:12px}
+  .m-end-tip .msg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:12px;color:var(--sub);background:transparent;border:none;opacity:.85;padding:6px 0}
   .m-end-tip .em{font-size:15px}
 }
 
@@ -286,15 +289,15 @@ tbody tr:last-child td{border-bottom:none}
       <div class="num" id="c-total">–</div><div class="lbl">任务总数</div>
       <div class="ctip">🗓️ 未来 7 天排期全貌</div>
     </div>
-    <div class="card card-done" data-filter="关闭" title="状态为【关闭】的已完结任务">
+    <div class="card card-done" data-filter="关闭" title="已完成：状态为【关闭】的任务">
       <div class="num" id="c-done">–</div><div class="lbl">已完成</div>
       <div class="ctip">✅ 已收工，安心喝口茶</div>
     </div>
-    <div class="card card-run" data-filter="测试中" title="处于测试验收阶段的任务">
+    <div class="card card-run" data-filter="测试中" title="进行中：状态为【测试中】的任务">
       <div class="num" id="c-run">–</div><div class="lbl">进行中</div>
       <div class="ctip">🔥 测试中，盯紧验收</div>
     </div>
-    <div class="card card-wait" data-filter="开始|开发中|开发完成" title="待启动及开发阶段未验收任务">
+    <div class="card card-wait" data-filter="开始|开发中|开发完成" title="未开始：状态为【开始、开发中、开发完成】的任务">
       <div class="num" id="c-wait">–</div><div class="lbl">未开始</div>
       <div class="ctip">📋 还有这么多没干完，活太多啦～想插需求？挑张看不顺眼的单换掉它 😏</div>
     </div>
@@ -309,8 +312,8 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="panel">
     <h2>任务明细</h2>
+    <div class="tip tip-soft"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
     <div class="window-info" id="win-info"></div>
-    <div class="tip"><span class="em">🍵</span><span>排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span></div>
     <div class="overload-tip" id="overload-tip"><span class="em">⛰️</span><span>全部任务工作量已达 <b id="total-workload">0</b>h，已超负荷运作~ 要注意劳逸结合哦</span></div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
@@ -370,7 +373,7 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 try {
-const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "sprint": "0814~0821", "sprintBegin": "2026-08-15", "sprintEnd": "2026-08-22", "lastFetch": "2026-08-15 00:24", "tokenExp": "2026-08-16 00:18", "tokenExpired": false, "totalWorkload": 41.0, "overload": true, "productDist": [{"product": "sop-门店运营平台", "hours": 24.0, "short": "sop", "pct": 58.5}, {"product": "sas-销售中台", "hours": 13.0, "short": "sas", "pct": 31.7}, {"product": "sy-dj-海鼎到家", "hours": 4.0, "short": "sy", "pct": 9.8}], "tasks": [{"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-15", "due": "2026-08-17", "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪"}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "status": "开始", "progress": 0, "workload": 0, "kickoff": "2026-08-15", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校"}, {"key": "SAS-13744", "summary": "绿叶-到家小程序配送单截停失败后 order.intercept 未回滚优化", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-17", "due": "2026-08-17", "done": false, "product": "sas-销售中台", "proj": "湖南绿叶水果连锁_POS_年度服务项目(202511-202611)", "starter": "杨海校"}, {"key": "SAS-13822", "summary": "【金粒门】到家小程序给到CRM的订单号信息更正为到家订单交易号", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sy-dj-海鼎到家", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "苗圃"}, {"key": "SAS-13849", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter-套餐", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13728", "summary": "零食很能嗨-自助销售单的特征码同步H6及pos", "status": "开发完成", "progress": 0, "workload": 2.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零小嗨新增自助收银(202606-202706)", "starter": "杨海校"}, {"key": "SAS-13752", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13754", "summary": "泡泡玛特国际_CPOS对接客服系统增加推送secure_id", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "北京泡泡玛特潮流玩具专卖_POS_泡泡玛特北美1开发合同(202510-202610)", "starter": "杨海校"}, {"key": "SAS-13417", "summary": "千家惠-自助收银机支持核销文峰集团会员系统发售的卡券", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13418", "summary": "新宇贸易_自助收银对接微盟POS通", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13552", "summary": "【桂林力源】巡检支持点检项配置", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "张家浩"}, {"key": "SAS-13730", "summary": "厦门元初. 自助收银机对接元初自研支付中台需求（优化需求）", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sas-销售中台", "proj": "福建厦门元初食品_POS_元初人日锁定合同(202604-202704)", "starter": "杨海校"}]};
+const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "sprint": "0814~0821", "sprintBegin": "2026-08-15", "sprintEnd": "2026-08-22", "lastFetch": "2026-08-15 00:24", "tokenExp": "2026-08-16 00:18", "tokenExpired": false, "totalWorkload": 41.0, "overload": true, "productDist": [{"product": "sop-门店运营平台", "hours": 24.0, "short": "sop", "pct": 58.5}, {"product": "sas-销售中台", "hours": 13.0, "short": "sas", "pct": 31.7}, {"product": "sy-dj-海鼎到家", "hours": 4.0, "short": "dj", "pct": 9.8}], "tasks": [{"key": "SOP-13858", "summary": "【海鼎零售App】【门店助手】标准版本.老客户切换混开.性能测试对比", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-15", "due": "2026-08-17", "done": false, "product": "sop-门店运营平台", "proj": "内部项目_产研中心_上海研发二部_研发投入(202601-202612)", "starter": "徐妍琪"}, {"key": "SAS-13898", "summary": "[回归验证] 邻几便利_云小智手动输入会员后付款时价格恢复原价（TM-43250 限量促销修复后）", "status": "开始", "progress": 0, "workload": 0, "kickoff": "2026-08-15", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "安徽邻几便利_POS项目(201809-202608)", "starter": "杨海校"}, {"key": "SAS-13744", "summary": "绿叶-到家小程序配送单截停失败后 order.intercept 未回滚优化", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-17", "due": "2026-08-17", "done": false, "product": "sas-销售中台", "proj": "湖南绿叶水果连锁_POS_年度服务项目(202511-202611)", "starter": "杨海校"}, {"key": "SAS-13822", "summary": "【金粒门】到家小程序给到CRM的订单号信息更正为到家订单交易号", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sy-dj-海鼎到家", "proj": "湖南金粒门_POS_项目(202505-202605)", "starter": "苗圃"}, {"key": "SAS-13849", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter-套餐", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-18", "due": "2026-08-18", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13728", "summary": "零食很能嗨-自助销售单的特征码同步H6及pos", "status": "开发完成", "progress": 0, "workload": 2.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "昆明零小嗨_POS_零小嗨新增自助收银(202606-202706)", "starter": "杨海校"}, {"key": "SAS-13752", "summary": "【马来西亚全家】半自助和自助收银机支持pay at counter", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sop-门店运营平台", "proj": "马来西亚全家_POS_项目(202511-203011)", "starter": "苗圃"}, {"key": "SAS-13754", "summary": "泡泡玛特国际_CPOS对接客服系统增加推送secure_id", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-19", "due": "2026-08-19", "done": false, "product": "sas-销售中台", "proj": "北京泡泡玛特潮流玩具专卖_POS_泡泡玛特北美1开发合同(202510-202610)", "starter": "杨海校"}, {"key": "SAS-13417", "summary": "千家惠-自助收银机支持核销文峰集团会员系统发售的卡券", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13418", "summary": "新宇贸易_自助收银对接微盟POS通", "status": "开发完成", "progress": 0, "workload": 4.0, "kickoff": "2026-08-20", "due": "2026-08-20", "done": false, "product": "sas-销售中台", "proj": "江苏省千家惠_POS_年度服务项目(202601-202612)", "starter": "杨海校"}, {"key": "SAS-13552", "summary": "【桂林力源】巡检支持点检项配置", "status": "开始", "progress": 0, "workload": 8.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sop-门店运营平台", "proj": "深圳灵聚力_POS_力源门店运营平台202412(202412-202512)", "starter": "张家浩"}, {"key": "SAS-13730", "summary": "厦门元初. 自助收银机对接元初自研支付中台需求（优化需求）", "status": "开发完成", "progress": 0, "workload": 1.0, "kickoff": "2026-08-21", "due": "2026-08-21", "done": false, "product": "sas-销售中台", "proj": "福建厦门元初食品_POS_元初人日锁定合同(202604-202704)", "starter": "杨海校"}]};
 
 const TAGLINES=[
   "☕ 排期已就绪，今天也要元气满满～",
@@ -389,6 +392,7 @@ function addDays(d,n){const r=new Date(d);r.setDate(d.getDate()+n);return r;}
 function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function parseISO(s){if(!s)return null;const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;return new Date(+m[1],+m[2]-1,+m[3]);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fmtH(h){h=+h;return Number.isInteger(h)?String(h):String(h);}
 
 const TODAY=today0();
 const WIN_END=addDays(TODAY,7);
@@ -411,17 +415,17 @@ function updateCards(){
   const prodColors=['#C98A5E','#7FB2DA','#8AA877','#BBA37C','#A8A29C'];
   if(D.productDist && D.productDist.length){
     const top=D.productDist[0];
-    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+top.hours+'h</span>';
+    document.getElementById('c-prod').innerHTML='<span style="font-size:26px">'+esc(top.short)+'</span><span style="font-size:13px"> '+fmtH(top.hours)+'h</span>';
     document.getElementById('c-prod-bars').innerHTML=D.productDist.slice(0,4).map((p,i)=>
       '<div class="prod-seg" style="width:'+p.pct+'%;background:'+prodColors[i%prodColors.length]+'"></div>'
     ).join('');
     document.getElementById('c-prod-legend').innerHTML=D.productDist.slice(0,4).map((p,i)=>
-      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+p.hours+'h</span>'
+      '<span><i style="background:'+prodColors[i%prodColors.length]+'"></i>'+esc(p.short)+' '+fmtH(p.hours)+'h</span>'
     ).join('');
   }
 
   if(D.overload){
-    document.getElementById('total-workload').textContent=D.totalWorkload;
+    document.getElementById('total-workload').textContent=fmtH(D.totalWorkload);
     document.getElementById('overload-tip').classList.add('show');
   }
 }
@@ -430,18 +434,10 @@ document.getElementById('sprint').textContent=D.sprint;
 document.getElementById('gen-time').textContent='生成于 '+D.sprintBegin+' ~ '+D.sprintEnd;
 
 function renderWinInfo(){
-  let expHtml='';
-  if(D.tokenExp){
-    if(D.tokenExpired){
-      expHtml=' · <span style="color:#b04a2f;font-weight:600">⚠️ 数据 token 已过期，请到浏览器重新复制 token 后刷新</span>';
-    }else{
-      expHtml=' · 数据有效至 <b>'+esc(D.tokenExp)+'</b>（过期前请在浏览器复制新 token）';
-    }
-  }
   const fetchHtml='最近获取：<b>'+esc(D.lastFetch)+'</b>';
   document.getElementById('win-info').innerHTML=
     '<span class="win-main">当前查看窗口：<b>'+fmt(TODAY)+' ~ '+fmt(WIN_END)+'</b>（今天起未来 7 天）'+
-    (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+expHtml+'</span>'+
+    (winTasks.length===0?' · <span style="color:#a8643a">该窗口内无排期任务，可能冲刺已结束，请联系刘莹重新生成</span>':'')+'</span>'+
     '<span class="win-fetch">'+fetchHtml+'</span>';
 }
 renderWinInfo();
@@ -583,6 +579,9 @@ function confirmJira(key){
   pendingKey=key;
   confirmEl.classList.add('open');
 }
+// 暴露到 window：内联 onclick="confirmJira(...)" 运行在全局作用域，
+// 而本函数定义在 try 块内（块级作用域），不暴露会导致点击报「confirmJira is not defined」
+window.confirmJira = confirmJira;
 document.getElementById('confirm-yes').addEventListener('click',()=>{
   confirmEl.classList.remove('open');
   if(pendingKey)window.open(jiraUrl(pendingKey),'_blank');
@@ -682,11 +681,10 @@ render();
 
 } catch (err) {
   console.error(err);
-  document.body.innerHTML='<div style="max-width:480px;margin:60px auto;padding:30px;background:#fff;border:1px solid #E4E0DA;border-radius:12px;text-align:center;color:#7A756F;font-family:sans-serif;line-height:1.8">'+
-    '<div style="font-size:40px;margin-bottom:12px">🛠️</div>'+
-    '<h2 style="color:#3A3835;margin-bottom:10px">页面加载出了点小问题</h2>'+
-    '<p>错误信息：'+esc(err.message)+'</p>'+
-    '<p>建议刷新页面，或联系刘莹重新生成看板。</p>'+
+  document.body.innerHTML='<div style="max-width:480px;margin:80px auto;padding:36px;background:#fff;border:1px solid #E4E0DA;border-radius:12px;text-align:center;color:#7A756F;font-family:sans-serif;line-height:1.9">'+
+    '<div style="font-size:42px;margin-bottom:14px">☕</div>'+
+    '<h2 style="color:#3A3835;margin-bottom:12px;font-size:18px">看板未成功加载，请稍后再看~</h2>'+
+    '<p style="font-size:13px">可能是数据正在刷新或网络波动，稍后刷新一下就好。</p>'+
     '</div>';
 }
 </script>
