@@ -64,7 +64,7 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .card.active{border:2px solid #C9BBA8}
 .card .num{font-size:34px;font-weight:800;line-height:1.1}
 .card .lbl{font-size:12px;margin-top:8px;font-weight:600;line-height:1.35}
-.card .ctip{font-size:12.5px;margin-top:8px;font-weight:500;line-height:1.45;opacity:.92;display:flex;align-items:center;gap:4px}
+.card .ctip{font-size:12.5px;margin-top:8px;font-weight:500;line-height:1.45;opacity:.92;display:flex;align-items:center;justify-content:center;gap:4px}
 .card-total{background:var(--c-total-bg)} .card-total .num,.card-total .lbl{color:var(--c-total-txt)}
 .card-done{background:var(--c-done-bg)} .card-done .num,.card-done .lbl{color:var(--c-done-txt)}
 .card-run{background:var(--c-run-bg)} .card-run .num,.card-run .lbl{color:var(--c-run-txt)}
@@ -233,6 +233,7 @@ tbody tr:last-child td{border-bottom:none}
   .head h1{font-size:20px;white-space:normal}
   .head .meta{font-size:12px;margin-top:4px}
   .head .badge{width:100%;text-align:center}
+  .head .tagline{justify-content:center;text-align:center}
   .cards{grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
   .card{padding:16px 10px}
   .card .num{font-size:28px}
@@ -250,7 +251,7 @@ tbody tr:last-child td{border-bottom:none}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
-  .banner-fetch{margin-left:0;width:100%;text-align:left;flex-basis:100%;margin-top:2px}
+  .banner-fetch{margin-left:0;width:100%;text-align:right;flex-basis:100%;margin-top:2px}
   .tbl-wrap{display:none}
   .mobile-list{display:block}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
@@ -362,6 +363,7 @@ const D = {"empName": "刘莹", "empId": "liuying", "dept": "测试二部", "spr
 // 移动端检测：用于精简头部头像与产品耗时卡
 const IS_MOBILE = window.matchMedia('(max-width:640px)').matches || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
 if(IS_MOBILE) document.body.classList.add('mobile');
+if(IS_MOBILE) document.getElementById('q').placeholder='搜索 任务号 / 任务名称';
 const JIRA_TARGET = IS_MOBILE ? '_self' : '_blank';
 
 const TAGLINES=[
@@ -439,7 +441,7 @@ function progClass(s){
   return ['p-start','pf-start'];
 }
 function jiraUrl(key){return 'http://jira6.app.hd123.cn/jira/browse/'+encodeURIComponent(key);}
-function devName(t){return (t.prev && t.prev.employeeName) || t.starterName || t.starter || '—';}
+function devName(t){return (t.prev && t.prev.employeeName) || '--';}
 
 function getFiltered(){
   const q=document.getElementById('q').value.trim().toLowerCase();
@@ -447,7 +449,7 @@ function getFiltered(){
   let rows=winTasks.filter(t=>{
     if(checked.length>0 && !checked.includes(t.status)) return false;
     if(q){
-      const hay=(t.key+' '+t.summary+' '+t.product+' '+t.proj).toLowerCase();
+      const hay=(IS_MOBILE ? (t.key+' '+t.summary) : (t.key+' '+t.summary+' '+t.product+' '+t.proj)).toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
