@@ -286,9 +286,9 @@ tbody tr:last-child td{border-bottom:none}
 /* 顶部俏皮提示语 */
 .tip{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--c-run-txt);background:var(--c-run-bg);border:1px solid #EAD9C0;border-radius:8px;padding:9px 14px;margin-bottom:14px}
 .tip .em{font-size:15px}
-.banner-text{flex:1;min-width:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
-.banner-fetch{margin-left:auto;white-space:nowrap}
-.tip.banner-fetch{flex-wrap:wrap;gap:4px 8px}
+.banner-msg{flex:1;min-width:0;white-space:normal;word-break:break-word;overflow-wrap:anywhere;text-align:left}
+.banner-time{margin-left:auto;white-space:nowrap;text-align:right}
+.tip.banner-box{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}
 /* 弱化版提示语（置于窗口信息上方，视觉更轻） */
 .tip-soft{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--sub);background:transparent;border:none;border-radius:8px;padding:0 2px 4px;margin-bottom:8px;opacity:.85}
 .tip-soft .em{font-size:14px;opacity:.9}
@@ -362,7 +362,9 @@ tbody tr:last-child td{border-bottom:none}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
-  .banner-fetch{margin-left:0;width:100%;text-align:right;flex-basis:100%;margin-top:2px}
+  .tip.banner-box{align-items:flex-start}
+  .banner-msg{flex:1 1 100%;text-align:left}
+  .banner-time{flex:0 0 100%;margin-left:0;text-align:right;margin-top:4px}
   .tbl-wrap{display:none}
   .mobile-list{display:block}
   .m-card{min-width:0;word-break:break-word;overflow-wrap:anywhere}
@@ -415,10 +417,9 @@ tbody tr:last-child td{border-bottom:none}
       <h2>任务明细</h2>
       <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>当前周期内工作量已达 <b id="total-workload">0</b>h，已超负荷运作~</span></span>
     </div>
-    <div class="tip banner-fetch">
-      <span class="em">🍵</span>
-      <span class="banner-text">排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</span>
-      <span class="banner-fetch" id="banner-fetch"></span>
+    <div class="tip banner-box">
+      <div class="banner-msg"><span class="em">🍵</span> 排期已奉上，测试同学正在疯狂输出，进度条是活的，别戳啦~</div>
+      <div class="banner-time" id="banner-fetch"></div>
     </div>
     <div class="filters">
       <input id="q" type="text" placeholder="搜索 任务号 / 任务名称 / 产品 / 客户项目…">
