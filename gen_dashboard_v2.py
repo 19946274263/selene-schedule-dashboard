@@ -442,7 +442,7 @@ tbody tr:last-child td{border-bottom:none}
         </colgroup>
         <thead><tr>
           <th>任务</th><th>Jira 状态</th><th>进度</th>
-          <th>工作量</th><th>开始</th><th class="th-prod">产品<span class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></span></th><th>客户项目</th><th>开发人</th>
+          <th>工作量</th><th>开始</th><th>结束</th><th class="th-prod">产品<span class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></span></th><th>客户项目</th><th>开发人</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -501,9 +501,8 @@ const TODAY=today0();
 const WIN_START=addDays(TODAY,-2);
 const WIN_END=addDays(TODAY,4);
 const winTasks=D.tasks.filter(t=>{
-  const k=parseISO(t.kickoff)||WIN_END;
   const e=parseISO(t.due)||WIN_START;
-  return e>=WIN_START && k<=WIN_END;
+  return e>=WIN_START && e<=WIN_END;
 });
 
 function updateCards(){
@@ -597,13 +596,14 @@ function renderTbody(rows, pageRows, isLastPage){
       '<td>'+progHtml+'</td>'+
       '<td class="mono nowrap">'+t.workload+'</td>'+
       '<td class="nowrap">'+esc(t.kickoff.slice(5))+'</td>'+
+      '<td class="nowrap">'+esc(t.due.slice(5))+'</td>'+
       '<td title="'+esc(t.product)+'"><span class="cell">'+esc(t.product)+'</span></td>'+
       '<td title="'+esc(t.proj)+'"><span class="cell">'+esc(t.proj)+'</span></td>'+
       '<td class="nowrap">'+esc(devName(t))+'</td>'+
       '</tr>';
   }).join('');
   if(isLastPage && pageRows.length>0){
-    html+='<tr class="end-tip"><td colspan="8"><div class="msg"><span class="em">⛰️</span>任务单还在持续叠加中，工作量已经像小山一样高了~</div></td></tr>';
+    html+='<tr class="end-tip"><td colspan="9"><div class="msg"><span class="em">⛰️</span>任务单还在持续叠加中，工作量已经像小山一样高了~</div></td></tr>';
   }
   tb.innerHTML=html;
 }
@@ -631,6 +631,7 @@ function renderMobile(rows, pageRows, isLastPage){
         '<span><span class="lb">Jira 状态</span>'+statusPill(t.status)+'</span>'+
         '<span><span class="lb">工作量</span>'+t.workload+'</span>'+
         '<span><span class="lb">开始</span>'+esc(t.kickoff)+'</span>'+
+        '<span><span class="lb">结束</span>'+esc(t.due)+'</span>'+
         '<span><span class="lb">产品</span>'+esc(t.product||'—')+'</span>'+
         '<span><span class="lb">客户项目</span>'+esc(t.proj||'—')+'</span>'+
         '<span><span class="lb">开发人</span>'+esc(devName(t))+'</span>'+
