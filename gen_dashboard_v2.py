@@ -522,8 +522,9 @@ function updateCards(){
   }
 }
 
-document.getElementById('sprint').textContent=D.sprint;
-document.getElementById('gen-time').textContent='数据周期 '+fmt(WIN_START)+' ~ '+fmt(WIN_END);
+const _sb=fmt(WIN_START), _se=fmt(WIN_END);
+document.getElementById('sprint').textContent=_sb.slice(5).replace('-','')+'~'+_se.slice(5).replace('-','');
+document.getElementById('gen-time').textContent='数据周期 '+_sb+' ~ '+_se;
 
 document.getElementById('banner-fetch').innerHTML='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
 updateCards();
