@@ -16,7 +16,7 @@ token 获取：登录 Selene 网页后，从浏览器 DevTools → Application �
 注意：Selene token 会过期（通常 24 小时），过期后脚本会标记「token 已过期」并沿用旧数据，
   需重新从浏览器取一次 token 再运行。
 """
-import os, sys, json, datetime, base64, urllib.request, urllib.error, subprocess, shutil
+import os, sys, json, datetime, base64, urllib.request, urllib.error, subprocess, shutil, hashlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 API = "http://selene.hd123.cn:52163/selene/v1/plan/gantt/employee/query"
@@ -24,6 +24,7 @@ OUT_JSON = os.path.join(HERE, "gantt_live.json")
 STATIC_JSON = os.path.join(HERE, "gantt_0814_0821.json")
 DEPLOY_HTML = os.path.join(HERE, "deploy", "index.html")
 GEN_HTML = os.path.join(HERE, "刘莹_人力排期看板.html")
+LAST_STATE = os.path.join(HERE, "last_fetch_state.txt")
 
 BJ = datetime.timezone(datetime.timedelta(hours=8))
 
@@ -74,9 +75,59 @@ def copy_to_deploy():
 
 
 def regenerate():
-    print("[信息] 重新生成看板…")
+    print("[信息] 重新生成看板 HTML…")
     subprocess.run([sys.executable, os.path.join(HERE, "gen_dashboard_v2.py")], check=True)
+
+
+def deploy_local():
     copy_to_deploy()
+
+
+def stable_hash(obj):
+    s = json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.md5(s.encode("utf-8")).hexdigest()
+
+
+def compute_state(payload):
+    """任务数据 + 刷新状态指纹，用于差异比对（fetchTime 不计入，避免每次都变）。"""
+    tokenExpired = payload.get("tokenExpired") if isinstance(payload, dict) else None
+    tokenExp = payload.get("tokenExp") if isinstance(payload, dict) else None
+    data = payload.get("data") if isinstance(payload, dict) else None
+    tasks = data
+    if isinstance(data, dict):
+        try:
+            tasks = data["employees"][0]["tasks"]
+        except Exception:
+            tasks = data
+    return stable_hash({"tasks": tasks, "tokenExpired": tokenExpired,
+                        "tokenExp": tokenExp})
+
+
+def load_state():
+    try:
+        return open(LAST_STATE, encoding="utf-8").read().strip()
+    except Exception:
+        return ""
+
+
+def save_state(s):
+    try:
+        with open(LAST_STATE, "w", encoding="utf-8") as f:
+            f.write(s)
+    except Exception:
+        pass
+
+
+def deploy_if_changed(state):
+    """数据或刷新状态有变化才重新生成并部署，否则跳过（节省 CloudStudio 部署次数）。"""
+    last = load_state()
+    if state != last:
+        regenerate()
+        deploy_local()
+        save_state(state)
+        return True
+    print("[信息] 数据无变化，跳过重新生成与部署（节省 CloudStudio 部署次数）。")
+    return False
 
 
 def mark_expired_and_regenerate(exp_dt):
@@ -89,8 +140,10 @@ def mark_expired_and_regenerate(exp_dt):
             d["tokenExp"] = exp_dt.strftime("%Y-%m-%d %H:%M")
         with open(OUT_JSON, "w", encoding="utf-8") as f:
             json.dump(d, f, ensure_ascii=False, indent=2)
-        print(f"[信息] 沿用旧快照 {os.path.basename(src)} 并标记「token 已过期」，重新生成看板。")
-        regenerate()
+        if deploy_if_changed(compute_state(d)):
+            print(f"[信息] token 已过期，已重新生成并部署「刷新失败」提示。")
+        else:
+            print(f"[信息] token 过期状态未变，跳过部署。")
     except Exception as e:
         print(f"[错误] 无法沿用旧快照：{e}")
 
@@ -149,7 +202,8 @@ def fetch():
     with open(OUT_JSON, "w", encoding="utf-8") as f:
         json.dump(resp, f, ensure_ascii=False, indent=2)
     print(f"[OK] 已拉取 {begin}~{end} 排期，保存至 {OUT_JSON}，最近获取：{resp['fetchTime']}")
-    regenerate()
+    if deploy_if_changed(compute_state(resp)):
+        print(f"[OK] 数据有变化，已重新生成并部署看板。")
 
 
 if __name__ == "__main__":

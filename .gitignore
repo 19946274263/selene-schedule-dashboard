@@ -4,6 +4,9 @@ selene_token.txt
 # 实时拉取的快照为临时数据，重新 fetch 即可生成
 gantt_live.json
 
+# 差异轮询用的本地状态指纹（重新 fetch 会自动重建）
+last_fetch_state.txt
+
 # Python 缓存
 __pycache__/
 *.pyc
