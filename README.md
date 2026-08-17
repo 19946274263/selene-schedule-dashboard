@@ -98,7 +98,10 @@ Selene 的 token 是 **JWT，有效期约 24 小时**，过期后接口返回 40
 ## 部署与分享
 
 - 本地：`浏览器直接打开 刘莹_人力排期看板.html`。
-- 对外分享：将 `deploy/index.html` 部署到静态托管（如 CloudStudio），得到一条可分享链接，任何人无需登录即可查看。
+- 对外分享（线上托管）：已迁移到 **腾讯云开发 CloudBase 静态托管**，链接稳定、域名干净独立，不会被安全软件连带标记为危险网页：
+  - **线上地址：`https://ordering-app-d9gxw51o637a01eed-1309857701.tcloudbaseapp.com/index.html`**
+  - 该链接对应 `deploy/index.html`，由 `fetch_selene.py` 的 `deploy_cloudbase()` 推送到 CloudBase 环境 `ordering-app-d9gxw51o637a01eed`。
+- 早期曾用 CloudStudio 免费沙箱，但其空闲回收会导致链接打不开、且共享二级域名 `*.app.workbuddy.link` 易被安全软件连同标记，故迁移至 CloudBase。
 
 ---
 
@@ -118,6 +121,15 @@ Selene 的 token 是 **JWT，有效期约 24 小时**，过期后接口返回 40
 
 **本地每小时自动刷新（推荐）**：双击运行 `setup_autosync.bat`，会用 Windows 任务计划创建名为 `SeleneDashboardSync` 的每小时任务，自动执行 `fetch_selene.py`（拉取 + 生成 + 同步到 `deploy/`）。
 
-**公开链接更新**：对外分享链接需一次部署动作，建议节奏——每天上班时若看板提示 token 已过期：复制新 token → 运行 fetch → 重新 deploy；否则每小时任务已保证本地数据最新。
+**公开链接（CloudBase）自动更新**：`fetch_selene.py` 在重新生成看板后，会调用 `deploy_cloudbase()` 把 `deploy/` 推送到 CloudBase 静态托管。该步骤需要本机已安装并登录 `tcb` CLI（二者满足其一即可）：
 
-> **全流程自动化卡点**：Selene token 需要浏览器登录态才能获取（自动登录受服务端 DTO 限制无法脚本化），目前无法做到「无人值守永久自动刷新」，必须每天人工复制一次 token。这是唯一需手动的环节。
+```bash
+# 方式 A：浏览器交互登录（本机执行一次，凭据会持久化）
+tcb login
+# 方式 B：用腾讯云永久密钥非交互登录（适合无人值守的定时任务）
+tcb login --apiKeyId <SecretID> --apiKey <SecretKey>
+```
+
+登录后，每小时任务即可自动把最新看板推到 CloudBase，无需人工重新部署。若 `tcb` 未安装 / 未登录，`deploy_cloudbase()` 会优雅跳过（仅打印提示、不中断刷新），本地数据仍保持最新；此时需手动用 `tcb hosting deploy deploy -e ordering-app-d9gxw51o637a01eed` 推送一次。
+
+> **全流程自动化卡点**：Selene token 需要浏览器登录态才能获取（自动登录受服务端 DTO 限制无法脚本化），目前无法做到「无人值守永久自动刷新」，必须每天人工复制一次 token。这是唯一需手动的环节。CloudBase 侧的推送凭据（tcb 登录）只需配置一次即可长期复用。

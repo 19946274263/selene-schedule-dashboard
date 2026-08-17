@@ -10,6 +10,7 @@
   python fetch_selene.py
 
   # 每小时自动刷新（Windows 任务计划）：用 schtasks 指向本脚本即可
+  # 线上托管：腾讯云开发静态托管（稳定、独立干净域名），需先 `tcb login` 或配置 API Key
 
 token 获取：登录 Selene 网页后，从浏览器 DevTools → Application → Local Storage →
   http://selene.hd123.cn:52163  → 找到 vuex 里的 token 字段复制。
@@ -23,6 +24,7 @@ API = "http://selene.hd123.cn:52163/selene/v1/plan/gantt/employee/query"
 OUT_JSON = os.path.join(HERE, "gantt_live.json")
 STATIC_JSON = os.path.join(HERE, "gantt_0814_0821.json")
 DEPLOY_HTML = os.path.join(HERE, "deploy", "index.html")
+DEPLOY_DIR = os.path.join(HERE, "deploy")
 GEN_HTML = os.path.join(HERE, "刘莹_人力排期看板.html")
 LAST_STATE = os.path.join(HERE, "last_fetch_state.txt")
 
@@ -79,8 +81,68 @@ def regenerate():
     subprocess.run([sys.executable, os.path.join(HERE, "gen_dashboard_v2.py")], check=True)
 
 
+# 线上托管环境：腾讯云开发静态托管（稳定、独立干净域名，规避共享域名被标记/回收）
+CLOUDBASE_ENV = "ordering-app-d9gxw51o637a01eed"
+CLOUDBASE_DOMAIN = "ordering-app-d9gxw51o637a01eed-1309857701.tcloudbaseapp.com"
+
+
+def find_tcb():
+    """定位 tcb 可执行文件：优先系统 PATH，其次 workbuddy 内置 node 工具目录（本机 tcb 实际位置）。"""
+    p = shutil.which("tcb") or shutil.which("tcb.cmd")
+    if p:
+        return p
+    base = os.path.join(os.path.expanduser("~"), ".workbuddy", "binaries",
+                        "node", "cli-connector-packages")
+    for name in ("tcb.cmd", "tcb"):
+        cand = os.path.join(base, name)
+        if os.path.exists(cand):
+            return cand
+    return None
+
+
+def tcb_logged_in(tcb):
+    """快速探测 tcb 是否已登录：tcb env list 未登录时立即返回错误且不卡。"""
+    try:
+        r = subprocess.run(f'"{tcb}" env list', shell=True,
+                           capture_output=True, text=True, timeout=25, input="")
+        out = (r.stdout + r.stderr)
+        if "No valid identity" in out or r.returncode != 0:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def deploy_cloudbase():
+    """把部署目录推送到 CloudBase 静态托管。未登录/未安装/失败时仅告警不中断（优雅降级）。"""
+    if not os.path.isdir(DEPLOY_DIR):
+        print("[提示] 部署目录不存在，跳过 CloudBase 推送。")
+        return
+    tcb = find_tcb()
+    if not tcb:
+        print("[提示] 未找到 tcb CLI，跳过 CloudBase 推送（本地数据已更新；如需自动推送请先安装并登录 tcb）。")
+        return
+    if not tcb_logged_in(tcb):
+        print("[提示] tcb 未登录，跳过 CloudBase 推送（本地数据已更新；如需自动推送请先 `tcb login` 或配置 API Key）。")
+        return
+    try:
+        cmd = f'"{tcb}" hosting deploy "{DEPLOY_DIR}" -e {CLOUDBASE_ENV}'
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120, input="")
+        if r.returncode == 0:
+            print(f"[OK] 已推送到 CloudBase 静态托管：https://{CLOUDBASE_DOMAIN}/index.html")
+        else:
+            out = (r.stdout + r.stderr).strip()
+            print(f"[提示] CloudBase 推送失败（不影响本地数据）：{out[:200]}")
+    except subprocess.TimeoutExpired:
+        print("[提示] CloudBase 推送超时（不影响本地数据），请稍后手动重试。")
+    except Exception as e:
+        print(f"[提示] CloudBase 推送跳过（{e}），本地数据已更新。")
+
+
 def deploy_local():
     copy_to_deploy()
+    deploy_cloudbase()
+
 
 
 def stable_hash(obj):
