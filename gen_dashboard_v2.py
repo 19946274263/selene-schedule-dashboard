@@ -436,9 +436,9 @@ tbody tr:last-child td{border-bottom:none}
     <div class="tbl-wrap">
       <table>
         <colgroup>
-          <col style="width:190px"><col style="width:88px"><col style="width:96px">
-          <col style="width:60px"><col style="width:74px"><col style="width:130px">
-          <col style="width:170px"><col style="width:72px">
+          <col style="width:320px"><col style="width:96px"><col style="width:100px">
+          <col style="width:72px"><col style="width:84px"><col style="width:84px">
+          <col style="width:150px"><col><col style="width:92px">
         </colgroup>
         <thead><tr>
           <th>任务</th><th>Jira 状态</th><th>进度</th>
