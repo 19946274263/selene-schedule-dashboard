@@ -10,8 +10,9 @@ REM  日志：selene_sync.log
 REM  取消任务：schtasks /delete /tn SeleneDashboardSync /f
 REM ============================================================
 
-set "DIR=E:\autotest\workbuddy\selene-schedule-dashboard"
-if not exist "%DIR%" set "DIR=%~dp0"
+REM 优先用 bat 自身所在目录（你在哪个项目目录跑 bat，就调度哪个项目）
+set "DIR=%~dp0"
+if not exist "%DIR%fetch_selene.py" set "DIR=E:\autotest\workbuddy\selene-schedule-dashboard\"
 
 set "TASK=SeleneDashboardSync"
 set "PY=python"

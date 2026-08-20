@@ -1,6 +1,12 @@
 # 不提交 Selene token（含敏感凭证）
 selene_token.txt
 
+# 云函数配置含 SELENE_TOKEN 环境变量，禁止提交（本地保留即可）
+cloudbaserc.json
+
+# 部署产物（由脚本生成并推送到 CloudBase）
+deploy/
+
 # 实时拉取的快照为临时数据，重新 fetch 即可生成
 gantt_live.json
 

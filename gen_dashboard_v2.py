@@ -162,6 +162,23 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .head h1{font-size:22px;font-weight:700;color:var(--txt);letter-spacing:.3px;word-break:keep-all;overflow-wrap:normal}
 .head .meta{font-size:13px;color:var(--sub);margin-top:6px;word-break:keep-all}
 .head .badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 15px;font-size:13px;color:var(--sub);font-weight:500;flex-shrink:0}
+.period-select{position:relative;flex-shrink:0}
+.badge.period-toggle{cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
+.badge.period-toggle:hover{background:#FBF9F6;border-color:#D7CFC4}
+.period-toggle .arrow{font-size:10px;color:#999;transition:transform .2s}
+.period-select.open .period-toggle .arrow{transform:rotate(180deg)}
+.period-menu{position:absolute;top:calc(100%+8px);right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);padding:6px 0;min-width:170px;display:none;z-index:20;overflow:hidden}
+.period-select.open .period-menu{display:block}
+.period-menu label{position:relative;display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;color:var(--txt);cursor:pointer;white-space:nowrap;transition:background .15s}
+.period-menu label:hover{background:#FBF9F6}
+.period-menu label:has(input:checked){background:#F7F2EA;font-weight:600}
+.period-menu label:has(input:checked)::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:3px;background:#B5651D;border-radius:0 3px 3px 0}
+.period-menu input[type=radio]{accent-color:#B5651D;width:15px;height:15px;margin:0;cursor:pointer}
+@media(max-width:640px){
+  .period-select{width:100%}
+  .badge.period-toggle{width:100%;justify-content:center}
+  .period-menu{left:0;right:auto;width:100%}
+}
 .head .tagline{font-size:12px;color:var(--sub);margin-top:5px;opacity:.88;display:flex;align-items:center;gap:5px}
 .head .tagline::before{content:"";width:14px;height:1px;background:var(--c-wait-txt);opacity:.5}
 
@@ -215,12 +232,21 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSys
 .chk.s-done:has(input:checked) input{accent-color:var(--st-close-ac)}
 .reset-btn{padding:9px 16px;border:1px solid var(--warn-bd);border-radius:8px;font-size:13px;background:var(--warn-bg);color:var(--warn-txt);cursor:pointer;transition:all .15s;font-weight:600;margin-left:auto}
 .reset-btn:hover{background:#F3E4D6;color:#7A3A15}
+.refresh-btn{padding:9px 16px;border:1px solid #BFD3C4;border-radius:8px;font-size:13px;background:#EAF3EC;color:#2F6B46;cursor:pointer;transition:all .15s;font-weight:600;margin-left:8px}
+.refresh-btn:hover{background:#DCEBE0;color:#245539}
+.refresh-btn:disabled{opacity:.6;cursor:default}
 .filters .hint{font-size:12px;color:var(--sub);margin-left:0}
 
 /* 表格：固定布局 */
 .tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:1000px;table-layout:fixed}
 thead th{position:sticky;top:0;background:var(--head-bg);z-index:2;text-align:left;vertical-align:middle;padding:14px 12px;font-size:13.5px;font-weight:600;color:var(--head-txt);border-bottom:1px solid var(--line);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none;transition:background .15s}
+th.sortable:hover{background:#F3E4D6}
+th.sortable .sort-arrows{display:inline-flex;flex-direction:column;justify-content:center;gap:1px;margin-left:5px;vertical-align:middle;line-height:1}
+th.sortable .sort-arrows i{font-style:normal;font-size:8px;line-height:1;color:#CFC8BD;transition:color .15s}
+th.sortable.asc .sort-arrows .up,th.sortable.desc .sort-arrows .down{color:#B5651D}
+th.sortable.asc,th.sortable.desc{color:#8A4B12}
 tbody td{padding:14px 12px;border-bottom:1px solid var(--divider);vertical-align:middle;background:var(--row-bg);overflow:hidden}
 tbody tr{cursor:pointer;transition:background .12s}
 tbody tr:hover{background:var(--row-hover)}
@@ -360,6 +386,7 @@ tbody tr:last-child td{border-bottom:none}
   .chk input{flex-shrink:0;width:15px;height:15px}
   .chk span{flex:1 1 auto;min-width:0;white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;text-align:left;font-weight:500}
   .reset-btn{margin-left:0;width:100%;margin-top:4px}
+  .refresh-btn{margin-left:0;width:100%;margin-top:4px}
   .filters .hint{margin-left:0;text-align:right}
   .tip{font-size:11.5px;padding:8px 12px}
   .tip.banner-box{align-items:flex-start}
@@ -390,7 +417,12 @@ tbody tr:last-child td{border-bottom:none}
       <div class="meta">测试二部 · 冲刺 <b id="sprint">–</b> · 数据来源：Selene 人力排期</div>
       <div class="tagline" id="tagline"></div>
     </div>
-    <div class="badge" id="gen-time">–</div>
+    <div class="period-select" id="period-select">
+      <button class="badge period-toggle" id="period-toggle" type="button" title="选择统计周期">
+        <span class="pt-pre">选择周期</span><span id="gen-time">–</span><i class="arrow">▾</i>
+      </button>
+      <div class="period-menu" id="period-menu"></div>
+    </div>
   </div>
 
   <div class="cards" id="cards">
@@ -431,6 +463,7 @@ tbody tr:last-child td{border-bottom:none}
         <label class="chk s-done"><input type="checkbox" value="关闭"><span>关闭</span></label>
       </div>
       <button class="reset-btn" id="reset-btn" type="button">↺ 重置</button>
+      <button class="refresh-btn" id="refresh-btn" type="button">⟳ 刷新</button>
       <span class="hint" id="count-hint"></span>
     </div>
     <div class="tbl-wrap">
@@ -441,8 +474,8 @@ tbody tr:last-child td{border-bottom:none}
           <col style="width:150px"><col><col style="width:92px">
         </colgroup>
         <thead><tr>
-          <th>任务</th><th>Jira 状态</th><th>进度</th>
-          <th>工作量</th><th>开始</th><th>结束</th><th class="th-prod">产品<span class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></span></th><th>客户项目</th><th>开发人</th>
+          <th>任务</th><th>Jira 状态</th><th class="sortable" data-sort="progress">进度<span class="sort-arrows"><i class="up">▲</i><i class="down">▼</i></span></th>
+          <th class="sortable" data-sort="workload">工作量<span class="sort-arrows"><i class="up">▲</i><i class="down">▼</i></span></th><th class="sortable" data-sort="kickoff">开始<span class="sort-arrows"><i class="up">▲</i><i class="down">▼</i></span></th><th class="sortable" data-sort="due">结束<span class="sort-arrows"><i class="up">▲</i><i class="down">▼</i></span></th><th class="th-prod">产品<span class="prod-champ-th">🏆 耗时冠军 <b>__CHAMP_SHORT__</b></span></th><th>客户项目</th><th>开发人</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -470,7 +503,10 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 try {
-const D = __DATA__;
+// 实时取数代理（CloudBase HTTP 云函数）：点「刷新」即直连 Selene 拉最新数据，token 在服务端不暴露
+const SELENE_API='https://ordering-app-d9gxw51o637a01eed.service.tcloudbase.com/seleneProxy';
+let D = __DATA__;
+const PAGE_SIZE=10;
 
 // 移动端检测：用于精简头部头像与产品耗时卡
 const IS_MOBILE = window.matchMedia('(max-width:640px)').matches || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -498,12 +534,85 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function fmtH(h){h=+h;return Number.isInteger(h)?String(h):String(h);}
 
 const TODAY=today0();
-const WIN_START=addDays(TODAY,-2);
-const WIN_END=addDays(TODAY,4);
-const winTasks=D.tasks.filter(t=>{
-  const e=parseISO(t.due)||WIN_START;
-  return e>=WIN_START && e<=WIN_END;
-});
+let WIN_START=addDays(TODAY,-2);
+let WIN_END=addDays(TODAY,4);
+let winTasks=[];
+
+// 周期选择：默认本周，单选；下拉项只展示日期范围；修改后按所选周期重新过滤统计
+const WEEK_SPAN=7; // 每份「周」跨度 7 天（与默认 -2~+4 一致）
+const PERIOD_OFFSETS=[-2,-1,0,1,2]; // 前前一周/前一周/本周/后一周/后后一周
+function weekWindow(offset){
+  const s=addDays(TODAY,-2+offset*WEEK_SPAN);
+  const e=addDays(TODAY,4+offset*WEEK_SPAN);
+  return {start:s,end:e};
+}
+function updatePeriodDisplay(){
+  const _sb=fmt(WIN_START), _se=fmt(WIN_END);
+  document.getElementById('sprint').textContent=_sb.slice(5).replace('-','')+'~'+_se.slice(5).replace('-','');
+  document.getElementById('gen-time').textContent=_sb+' ~ '+_se;
+}
+function refreshByWindow(){
+  winTasks=D.tasks.filter(t=>{
+    const e=parseISO(t.due)||WIN_START;
+    return e>=WIN_START && e<=WIN_END;
+  });
+  updateCards();
+  updatePeriodDisplay();
+  currentPage=1;
+  render();
+}
+function renderPeriodMenu(){
+  const menu=document.getElementById('period-menu');
+  menu.innerHTML=PERIOD_OFFSETS.map(off=>{
+    const w=weekWindow(off);
+    return '<label><input type="radio" name="period-radio" value="'+off+'" data-offset="'+off+'"> <span>'+fmt(w.start)+' ~ '+fmt(w.end)+'</span></label>';
+  }).join('');
+}
+function computeSelectedWindow(){
+  const cb=document.querySelector('#period-menu input:checked');
+  if(!cb){
+    // 没有选中时回退到本周并自动勾选
+    const cur=document.querySelector('#period-menu input[data-offset="0"]');
+    if(cur) cur.checked=true;
+    return weekWindow(0);
+  }
+  return weekWindow(+cb.dataset.offset);
+}
+// 按所选周期自动套用默认状态筛选
+function setStatusDefault(off){
+  const boxes=[...document.querySelectorAll('#fstatus input')];
+  let vals;
+  if(off<0) vals=['关闭'];                        // 过期时间段：默认选中「已完成」
+  else if(off>0) vals=['开始','开发中','开发完成']; // 未来时间段：默认选中「未开始」（开始/开发中/开发完成）
+  else vals=['测试中','开发完成'];                 // 当前时间段：默认选中测试中与开发完成
+  boxes.forEach(b=>{ b.checked = vals.includes(b.value); });
+  syncCardActive();
+}
+function bindPeriodSelect(){
+  const wrap=document.getElementById('period-select');
+  const toggle=document.getElementById('period-toggle');
+  const menu=document.getElementById('period-menu');
+  toggle.addEventListener('click',(e)=>{e.stopPropagation();wrap.classList.toggle('open');});
+  menu.addEventListener('click',(e)=>{e.stopPropagation();});
+  menu.addEventListener('change',()=>{
+    const cb=document.querySelector('#period-menu input:checked');
+    const off=cb?(+cb.dataset.offset):0;
+    const w=weekWindow(off);
+    WIN_START=w.start; WIN_END=w.end;
+    setStatusDefault(off);     // 按所选周期自动套用默认状态筛选
+    refreshByWindow();
+    wrap.classList.remove('open');   // 单选：选完即收起
+  });
+  document.addEventListener('click',()=>{wrap.classList.remove('open');});
+}
+function initPeriod(){
+  renderPeriodMenu();
+  bindPeriodSelect();
+  const cur=document.querySelector('#period-menu input[data-offset="0"]');
+  if(cur) cur.checked=true;
+  const w=computeSelectedWindow();
+  WIN_START=w.start; WIN_END=w.end;
+}
 
 function updateCards(){
   const total=winTasks.length;
@@ -515,18 +624,45 @@ function updateCards(){
   document.getElementById('c-run').textContent=runN;
   document.getElementById('c-wait').textContent=waitN;
 
-  if(D.overload){
-    document.getElementById('total-workload').textContent=fmtH(D.totalWorkload);
-    document.getElementById('overload-tip').classList.add('show');
+  // 工作量统计按当前所选周期动态计算（而非全窗口）
+  const totalWl=winTasks.reduce((s,t)=>s+(+t.workload||0),0);
+  const overloaded=totalWl>40;
+  const tip=document.getElementById('overload-tip');
+  if(overloaded){
+    document.getElementById('total-workload').textContent=fmtH(totalWl);
+    tip.classList.add('show');
+  }else{
+    tip.classList.remove('show');
   }
+  updateChamp();
+}
+function shortNameLocal(p){
+  const parts=String(p).split('-');
+  const ascii=parts.filter(x=>x && !/[一-龥]/.test(x));
+  return (ascii.length?ascii[ascii.length-1]:String(p).slice(0,4)).toUpperCase();
+}
+// 耗时冠军按当前所选周期动态计算
+function updateChamp(){
+  const wl={};
+  for(const t of winTasks){const p=(t.product||'').trim()||'未分类'; wl[p]=(wl[p]||0)+(+t.workload||0);}
+  let champ='—',maxH=0;
+  for(const p in wl){ if(wl[p]>maxH){maxH=wl[p]; champ=shortNameLocal(p);} }
+  const champEl=document.querySelector('.prod-champ-th b');
+  if(champEl) champEl.textContent=champ;
 }
 
-const _sb=fmt(WIN_START), _se=fmt(WIN_END);
-document.getElementById('sprint').textContent=_sb.slice(5).replace('-','')+'~'+_se.slice(5).replace('-','');
-document.getElementById('gen-time').textContent='数据周期 '+_sb+' ~ '+_se;
+// 应用一份数据（初始加载与「刷新」按钮共用）：重算时间窗、刷新卡片/横幅/耗时冠军、重渲染
+function applyData(nd){
+  D = nd;
+  winTasks = D.tasks.filter(t=>{
+    const e=parseISO(t.due)||WIN_START;
+    return e>=WIN_START && e<=WIN_END;
+  });
+  updateCards();
+  document.getElementById('banner-fetch').innerHTML='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
+  render();
+}
 
-document.getElementById('banner-fetch').innerHTML='看板更新时间：<b>'+esc(D.lastFetch)+'</b>';
-updateCards();
 
 function badgeClass(s){return s==='开发中'?'tag-dev':(s==='开发完成'?'tag-wait':(s==='关闭'?'tag-done':(s==='已解决'?'tag-resolved':(s==='开始'?'tag-start':'tag-run'))));}
 const STATUS_TAG={
@@ -566,11 +702,23 @@ function getFiltered(){
     }
     return true;
   });
-  rows.sort((a,b)=>(a.kickoff||'').localeCompare(b.kickoff||'')||(a.due||'').localeCompare(b.due||''));
+  rows.sort((a,b)=>{
+    let av=a[sortBy], bv=b[sortBy];
+    const aEmpty=(av===''||av==null||av===undefined);
+    const bEmpty=(bv===''||bv==null||bv===undefined);
+    if(aEmpty&&bEmpty) return 0;
+    if(aEmpty) return 1;   // 空值始终排在末尾（不论升/降序）
+    if(bEmpty) return -1;
+    let cmp;
+    if(sortBy==='kickoff'||sortBy==='due') cmp=String(av).localeCompare(String(bv));
+    else cmp=Number(av)-Number(bv);
+    return sortDir==='asc'?cmp:-cmp;
+  });
   return rows;
 }
 let currentPage=1;
-const PAGE_SIZE=10;
+let sortBy='kickoff';   // 默认按「开始」时间排序
+let sortDir='asc';      // 默认升序，进入页面即选中「开始」升序
 function emptyHtml(msg){
   return '<tr><td colspan="8"><div class="empty"><span class="em">🔍</span>'+esc(msg)+'<br>请调整搜索关键词或筛选条件后重试</div></td></tr>';
 }
@@ -684,9 +832,56 @@ document.querySelectorAll('#fstatus input').forEach(c=>c.addEventListener('chang
 
 // 重置按钮
 document.getElementById('reset-btn').addEventListener('click',()=>{
-  document.querySelectorAll('#fstatus input').forEach(b=>{b.checked=(b.value==='测试中'||b.value==='开发完成');});
   document.getElementById('q').value='';
-  currentPage=1;syncCardActive();render();
+  sortBy='kickoff'; sortDir='asc';   // 重置排序为默认（开始升序）
+  // 重置周期为本周并套用当前周期的默认状态筛选（测试中 + 开发完成）
+  document.querySelectorAll('#period-menu input').forEach(b=>{b.checked=(b.dataset.offset==='0');});
+  const w=weekWindow(0); WIN_START=w.start; WIN_END=w.end;
+  setStatusDefault(0);
+  refreshByWindow();
+  updateSortIndicators();
+});
+
+// 表头排序（单排序）：点击同列切换升/降序，点击其他列改为该列升序
+function updateSortIndicators(){
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    th.classList.remove('asc','desc');
+    if(th.dataset.sort===sortBy) th.classList.add(sortDir);
+  });
+}
+document.querySelectorAll('th.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const key=th.dataset.sort;
+    if(sortBy===key){ sortDir=(sortDir==='asc'?'desc':'asc'); }
+    else { sortBy=key; sortDir='asc'; }
+    currentPage=1; updateSortIndicators(); render();
+  });
+});
+
+// 刷新按钮：点一下直连 Selene 实时取数（经服务端云函数代理，token 不暴露给浏览器）
+document.getElementById('refresh-btn').addEventListener('click',async (e)=>{
+  const btn=e.currentTarget;
+  if(btn.disabled) return;
+  const old=btn.textContent;
+  btn.disabled=true; btn.textContent='⟳ 刷新中…';
+  try{
+    const res=await fetch(SELENE_API,{cache:'no-store',mode:'cors'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const nd=await res.json();
+    if(nd.tokenExpired){
+      showToast('🔑 Selene 登录已过期（'+(nd.tokenExp||'')+'），请联系管理员更新 token');
+      return; // 保留当前看板，不覆盖为空
+    }
+    const prev=D.lastFetch;
+    applyData(nd);
+    if(nd.lastFetch && nd.lastFetch!==prev) showToast('✅ 已更新至 '+nd.lastFetch);
+    else showToast('🟢 已是最新（'+(nd.lastFetch||'')+'）');
+  }catch(err){
+    console.error(err);
+    showToast('⚠️ 刷新失败：'+(err&&err.message?err.message:'网络异常')+'，请稍后重试');
+  }finally{
+    btn.disabled=false; btn.textContent=old;
+  }
 });
 
 // 卡片点击筛选
@@ -753,8 +948,11 @@ document.getElementById('drawer-close').addEventListener('click',()=>drawer.clas
 document.getElementById('drawer-mask').addEventListener('click',()=>drawer.classList.remove('open'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')drawer.classList.remove('open');});
 
+initPeriod();
+updatePeriodDisplay();
 syncCardActive();
-render();
+updateSortIndicators();
+applyData(D);
 
 } catch (err) {
   console.error(err);

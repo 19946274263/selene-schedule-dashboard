@@ -1,0 +1,6 @@
+{
+  "name": "seleneProxy",
+  "version": "1.0.0",
+  "description": "代理 Selene 实时拉取刘莹人力排期",
+  "main": "index.js"
+}

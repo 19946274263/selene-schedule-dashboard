@@ -60,18 +60,22 @@ def decode_token_exp(token):
 
 
 def window_days():
+    # 拉取范围扩大到前后各 3 周（覆盖「前前一周 ~ 后后一周」），
+    # 前端再按所选周期子窗口过滤，使切周期能查到对应任务
     today = bj_now().date()
-    begin = today - datetime.timedelta(days=2)
-    end = today + datetime.timedelta(days=4)
+    begin = today - datetime.timedelta(days=21)
+    end = today + datetime.timedelta(days=21)
     f = lambda d: d.strftime("%Y-%m-%d")
     return f(begin), f(end)
 
 
 def copy_to_deploy():
     try:
-        os.makedirs(os.path.dirname(DEPLOY_HTML), exist_ok=True)
+        os.makedirs(DEPLOY_DIR, exist_ok=True)
         shutil.copyfile(GEN_HTML, DEPLOY_HTML)
-        print(f"[OK] 已同步到部署目录 {DEPLOY_HTML}")
+        # 同步数据快照，供看板「刷新」按钮实时同源拉取
+        shutil.copyfile(OUT_JSON, os.path.join(DEPLOY_DIR, "gantt_live.json"))
+        print(f"[OK] 已同步到部署目录 {DEPLOY_HTML} 及 gantt_live.json")
     except Exception as e:
         print(f"[提示] 部署目录同步跳过：{e}")
 
@@ -259,6 +263,7 @@ def fetch():
         sys.exit(3)
 
     resp["fetchTime"] = bj_now().strftime("%Y-%m-%d %H:%M")
+    resp["lastFetch"] = resp["fetchTime"]   # 与 fetchTime 一致，供看板「看板更新时间」显示
     resp["tokenExp"] = exp_dt.strftime("%Y-%m-%d %H:%M") if exp_dt else ""
     resp["tokenExpired"] = False
     with open(OUT_JSON, "w", encoding="utf-8") as f:
