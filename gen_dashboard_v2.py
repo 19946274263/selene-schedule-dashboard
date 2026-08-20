@@ -534,17 +534,18 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function fmtH(h){h=+h;return Number.isInteger(h)?String(h):String(h);}
 
 const TODAY=today0();
-let WIN_START=addDays(TODAY,-2);
-let WIN_END=addDays(TODAY,4);
+const _dow0=TODAY.getDay();          // 0=周日 … 6=周六
+const _monOff0=(_dow0+6)%7;          // 距本周一的天数（周一=0）
+let WIN_START=addDays(TODAY,-_monOff0);  // 本周一（仅周一到周五，不含周末）
+let WIN_END=addDays(WIN_START,4);        // 本周五
 let winTasks=[];
 
-// 周期选择：默认本周，单选；下拉项只展示日期范围；修改后按所选周期重新过滤统计
-const WEEK_SPAN=7; // 每份「周」跨度 7 天（与默认 -2~+4 一致）
+// 周期选择：默认本周（当天所在周的周一~周五），单选；下拉项只展示日期范围；修改后按所选周期重新过滤统计
+const WEEK_SPAN=7; // 相邻周期以 7 天（一周）为偏移步长
 const PERIOD_OFFSETS=[-2,-1,0,1,2]; // 前前一周/前一周/本周/后一周/后后一周
 function weekWindow(offset){
-  const s=addDays(TODAY,-2+offset*WEEK_SPAN);
-  const e=addDays(TODAY,4+offset*WEEK_SPAN);
-  return {start:s,end:e};
+  const mon=addDays(TODAY,-_monOff0+offset*WEEK_SPAN); // 本周一（offset=0）或其前后周的周一
+  return {start:mon, end:addDays(mon,4)};   // 只涵盖周一~周五
 }
 function updatePeriodDisplay(){
   const _sb=fmt(WIN_START), _se=fmt(WIN_END);
