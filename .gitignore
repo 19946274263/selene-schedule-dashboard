@@ -1,18 +1,12 @@
-# 不提交 Selene token（含敏感凭证）
+# 敏感凭证：selene token（JWT，约 24h 过期），切勿提交到仓库
 selene_token.txt
-
-# 云函数配置含 SELENE_TOKEN 环境变量，禁止提交（本地保留即可）
+# cloudbaserc.json 含 SELENE_TOKEN 环境变量，切勿提交到公开仓库
 cloudbaserc.json
 
-# 部署产物（由脚本生成并推送到 CloudBase）
-deploy/
+# 本地临时产物（函数代码下载 / 云上文件快照）
+fn_seleneProxy/
+cloud_inspect/
 
-# 实时拉取的快照为临时数据，重新 fetch 即可生成
-gantt_live.json
-
-# 差异轮询用的本地状态指纹（重新 fetch 会自动重建）
-last_fetch_state.txt
-
-# Python 缓存
+# Python
 __pycache__/
 *.pyc
