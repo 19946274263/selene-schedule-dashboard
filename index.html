@@ -297,30 +297,40 @@ tbody tr:last-child td{border-bottom:none}
   .chk-group{grid-template-columns:repeat(2,1fr)}
 }
 
-  /* 月周期达成率面板（默认收起，点击标题展开） */
-  .monthly-panel{margin-top:18px;}
-  .monthly-panel .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;cursor:pointer;user-select:none;}
-  .monthly-panel .panel-head h2{cursor:pointer;}
-  .m-chevron{display:inline-block;transition:transform .2s;color:#8A857E;font-size:12px;margin-left:5px;}
-  .monthly-panel.collapsed .m-chevron{transform:rotate(-90deg);}
-  .monthly-body{overflow:hidden;}
-  .monthly-panel.collapsed .monthly-body{display:none;}
-  .m-cycle{font-size:12px;color:#8A857E;font-weight:500;}
-  .m-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;}
-  .m-stat{background:#F7F4EF;border:1px solid #ECE7E0;border-radius:10px;padding:14px 12px;text-align:center;}
-  .m-num{font-size:22px;font-weight:700;color:#3A3835;line-height:1.1;}
+  /* 月周期达成率：头部右下角（选择周期下方）紧凑芯片 + ⓘ 悬浮卡 */
+  .head-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;position:relative;flex-shrink:0;}
+  .m-headrate{display:flex;align-items:center;gap:8px;border-radius:999px;padding:4px 6px 4px 12px;font-size:13px;color:var(--sub);font-weight:500;}
+  .m-headrate .m-result{font-size:17px;font-weight:700;line-height:1;}
+  .m-result.lv-great{color:#2F6B46;} .m-result.lv-good{color:#5B8C3E;}
+  .m-result.lv-mid{color:#B5892B;} .m-result.lv-low{color:#B5654D;}
+  .m-help{width:22px;height:22px;border-radius:50%;border:1px solid #D8D2C9;background:#fff;color:#8A857E;
+    font-size:13px;line-height:1;cursor:pointer;flex:none;display:inline-flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;}
+  .m-help:hover{background:#F7F4EF;color:#3A3835;}
+  .m-popover{position:absolute;right:0;top:calc(100% + 10px);width:330px;max-width:min(330px,calc(100vw - 48px));background:#fff;
+    border:1px solid #ECE7E0;border-radius:12px;box-shadow:0 8px 24px rgba(60,50,40,.16);padding:14px;z-index:40;}
+  .m-popover[hidden]{display:none;}
+  .m-pop-arrow{position:absolute;top:-7px;right:22px;width:12px;height:12px;background:#fff;
+    border-left:1px solid #ECE7E0;border-top:1px solid #ECE7E0;transform:rotate(45deg);}
+  .m-cycle{font-size:11.5px;color:#8A857E;font-weight:500;margin-bottom:10px;}
+  .m-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .m-stat{background:#F7F4EF;border:1px solid #ECE7E0;border-radius:10px;padding:12px 10px;text-align:center;}
+  .m-num{font-size:20px;font-weight:700;color:#3A3835;line-height:1.1;}
   .m-lbl{font-size:11px;color:#8A857E;margin-top:6px;}
   .m-bar{height:12px;background:#E3F0E1;border-radius:8px;overflow:hidden;margin-top:14px;}
   .m-bar-fill{height:100%;width:0;background:#A3D9A5;border-radius:8px;transition:width .4s ease;}
   .m-tip{font-size:12.5px;font-weight:600;margin-top:10px;line-height:1.6;display:flex;align-items:center;gap:6px;}
   .m-tip.lv-great{color:#2F6B46;} .m-tip.lv-good{color:#5B8C3E;}
   .m-tip.lv-mid{color:#B5892B;} .m-tip.lv-low{color:#B5654D;}
-  .m-note{font-size:12px;color:#8A857E;margin-top:8px;line-height:1.7;}
   .m-config{display:none;align-items:center;gap:14px;margin-top:10px;flex-wrap:wrap;}
   .m-config label{font-size:13px;color:#3A3835;font-weight:500;}
   .m-config input{width:58px;padding:4px 6px;border:1px solid #D8D2C9;border-radius:6px;font-size:13px;text-align:center;}
   .m-hint{font-size:11px;color:#A39E96;}
-  @media (max-width:640px){ .m-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:640px){
+    .head-right{width:100%;align-items:stretch;}
+    .m-popover{right:auto;left:0;}
+    .m-pop-arrow{right:auto;left:22px;}
+  }
 </style>
 </head>
 <body>
@@ -332,11 +342,34 @@ tbody tr:last-child td{border-bottom:none}
       <div class="meta">测试二部 · 冲刺 <b id="sprint">–</b> · 数据来源：Selene 人力排期</div>
       <div class="tagline" id="tagline"></div>
     </div>
-    <div class="period-select" id="period-select">
-      <button class="badge period-toggle" id="period-toggle" type="button" title="选择统计周期">
-        <span class="pt-pre">选择周期</span><span id="gen-time">–</span><i class="arrow">▾</i>
-      </button>
-      <div class="period-menu" id="period-menu"></div>
+    <div class="head-right">
+      <div class="period-select" id="period-select">
+        <button class="badge period-toggle" id="period-toggle" type="button" title="选择统计周期">
+          <span class="pt-pre">选择周期</span><span id="gen-time">–</span><i class="arrow">▾</i>
+        </button>
+        <div class="period-menu" id="period-menu"></div>
+      </div>
+      <div class="m-headrate" id="m-headrate">
+        <span id="m-title">📅 月周期达成率</span>
+        <span class="m-result" id="m-result">–</span>
+        <button class="m-help" id="m-help" type="button" aria-label="查看各指标明细" title="查看各指标明细">ⓘ</button>
+      </div>
+      <div class="m-popover" id="m-popover" hidden>
+        <div class="m-pop-arrow"></div>
+        <div class="m-cycle" id="m-cycle">–</div>
+        <div class="m-grid">
+          <div class="m-stat"><div class="m-num" id="m-closed-count">–</div><div class="m-lbl">周期内已关闭任务单</div></div>
+          <div class="m-stat"><div class="m-num" id="m-effective">–</div><div class="m-lbl">累计有效工时 (h)</div></div>
+          <div class="m-stat"><div class="m-num" id="m-planned">–</div><div class="m-lbl">月周期计划工时 (h)</div></div>
+          <div class="m-stat"><div class="m-num" id="m-rate">–</div><div class="m-lbl">达成率</div></div>
+        </div>
+        <div class="m-bar"><div class="m-bar-fill" id="m-bar-fill"></div></div>
+        <div class="m-tip" id="m-tip"></div>
+        <div class="m-config">
+          <label>本月请假日：<input type="number" id="m-vacation" min="0" step="1" value="4"> 天</label>
+          <span class="m-hint">达成率 = 累计有效工时 ÷ 月周期计划工时</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -359,31 +392,9 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 
-  <div class="panel monthly-panel collapsed" id="monthly-panel">
-    <div class="panel-head" id="monthly-toggle" title="点击展开 / 收起">
-      <h2>📅 月周期达成率 <span class="m-chevron">▾</span></h2>
-      <span class="m-cycle" id="m-cycle">–</span>
-    </div>
-    <div class="monthly-body">
-      <div class="m-grid">
-        <div class="m-stat"><div class="m-num" id="m-closed-count">–</div><div class="m-lbl">周期内已关闭任务单</div></div>
-        <div class="m-stat"><div class="m-num" id="m-effective">–</div><div class="m-lbl">累计有效工时 (h)</div></div>
-        <div class="m-stat"><div class="m-num" id="m-planned">–</div><div class="m-lbl">月周期计划工时 (h)</div></div>
-        <div class="m-stat"><div class="m-num" id="m-rate">–</div><div class="m-lbl">达成率</div></div>
-      </div>
-      <div class="m-bar"><div class="m-bar-fill" id="m-bar-fill"></div></div>
-      <div class="m-tip" id="m-tip"></div>
-      <div class="m-note" id="m-note"></div>
-      <div class="m-config">
-        <label>本月请假日：<input type="number" id="m-vacation" min="0" step="1" value="4"> 天</label>
-        <span class="m-hint">达成率 = 累计有效工时 ÷ 月周期计划工时</span>
-      </div>
-    </div>
-  </div>
-
   <div class="panel">
     <div class="panel-head">
-      <h2>任务明细</h2>
+      <h2>🗂️ 任务明细</h2>
       <span class="overload-tip" id="overload-tip"><span class="em">⚠️</span><span>当前周期内工作量已达 <b id="total-workload">0</b>h，已超负荷运作~</span></span>
     </div>
     <div class="tip banner-box">
@@ -476,7 +487,13 @@ const HOLIDAYS = new Set(['2026-10-01','2026-10-02','2026-10-03','2026-10-04','2
 const MAKEUP_WORKDAYS = new Set(['2026-10-10']); // 国庆调休补班（周末上班）
 const CLOSED_STATUSES = ['关闭'];                // 计入“已关闭”的状态
 const EFF_COEF = 1.1;        // 累计有效工时折算系数（写死）
-const VACATION_DAYS = 4;     // 本月请假日（写死，页面不外露）
+// 请假日按月周期配置（key = 周期起始月 "YYYY-MM"）：每个周期从 26 号起自动归零，
+// 只有在此登记过的月份才计入请假；刘莹请假时在此补一条即可。
+const VACATION_BY_CYCLE = { '2026-09': 4 };  // 本周期（09-26 ~ 10-25）请假 4 天
+function vacationFor(start){
+  const k = start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0');
+  return VACATION_BY_CYCLE[k] || 0;
+}
 function monthlyCycle(ref){
   const y=ref.getFullYear(), m=ref.getMonth();
   return { start:new Date(y,m-1,26), end:new Date(y,m,25) };
@@ -500,11 +517,13 @@ function renderMonthly(){
   });
   const rawEff = inCycle.reduce((s,t)=>s+(+t.workload||0),0);
   const effH = rawEff * EFF_COEF;                 // 累计有效工时 × 系数 1.1
-  const vac = VACATION_DAYS;                      // 本月请假（写死，不外露）
+  const vac = vacationFor(start);                 // 请假日按周期读取（未登记自动为 0）
   let workdays=0; eachDayInCycle(start,end,d=>{ if(isWorkday(d)) workdays++; });
   const planned = (workdays - vac) * 8;
   const rate = planned>0 ? (effH/planned*100) : 0;
-  document.getElementById('m-cycle').textContent = fmt(start)+' ~ '+fmt(end)+'（上月26 ~ 本月25）';
+  document.getElementById('m-cycle').textContent = fmt(start)+' ~ '+fmt(end);
+  // 周期所属月份以周期结束日为准（如 09-26 ~ 10-25 → 10月周期）
+  document.getElementById('m-title').textContent = '📅 '+(end.getMonth()+1)+'月周期达成率';
   document.getElementById('m-closed-count').textContent = inCycle.length+' 条';
   document.getElementById('m-effective').textContent = effH.toFixed(1);
   document.getElementById('m-planned').textContent = planned.toFixed(1);
@@ -522,9 +541,10 @@ function renderMonthly(){
   else { lv='lv-low'; msg='⚠️ 进度偏慢，建议优先推进高工时任务单。'; }
   tip.className='m-tip '+lv;
   tip.textContent=msg;
-  document.getElementById('m-note').innerHTML =
-    '统计口径：仅计入状态为「'+CLOSED_STATUSES.join('/')+'」且截止日落在月周期内的任务单；'+
-    '累计有效工时已按系数 ×'+EFF_COEF.toFixed(1)+' 折算。';
+  // 头部结果直接露出，并随等级变色
+  const res=document.getElementById('m-result');
+  res.textContent = rate.toFixed(1)+'%';
+  res.className='m-result '+lv;
 }
 
 const TODAY=today0();
@@ -964,9 +984,15 @@ syncCardActive();
 updateSortIndicators();
 applyData(D);
 renderMonthly();
-document.getElementById('monthly-toggle').addEventListener('click',()=>{
-  document.getElementById('monthly-panel').classList.toggle('collapsed');
-});
+// 月周期：ⓘ 点击弹出/收起悬浮卡；点击外部或按 ESC 关闭
+(function(){
+  const help=document.getElementById('m-help');
+  const pop=document.getElementById('m-popover');
+  help.addEventListener('click',e=>{ e.stopPropagation(); pop.hidden=!pop.hidden; });
+  pop.addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',()=>{ if(!pop.hidden) pop.hidden=true; });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') pop.hidden=true; });
+})();
 // 云函数代理已下线：静态快照模式不再自动拉取实时数据（刷新按钮已置灰禁用）
 /* loadLive().catch(e=>console.warn('自动刷新失败，使用内嵌快照',e)); */
 
